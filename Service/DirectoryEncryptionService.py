@@ -22,6 +22,8 @@ class DirectoryEncryptionService:
             if os.path.isdir(file): continue
 
             if file.endswith(FileEncryptionService.acceptedToEncrypteFileType):
-                FileEncryptionService.encrypt_file(dir_path + '\\' + file, key)
+                FileEncryptionService.create_encrypted_file(dir_path + '\\' + file, key)
 
         print("File Encrypted Successfully")
+        # Clean-up
+        password = None

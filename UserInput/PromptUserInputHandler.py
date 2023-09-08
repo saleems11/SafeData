@@ -5,7 +5,7 @@ from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
 class PromptUserInputHandler(BasePromptUserInputHandler):
 
     def getInputPassword(self) -> str:
-        password = self.getUserInput("Please Enter your password:")
+        password = self.getUserInput("Please Enter the password:")
         return password
 
     def getValidPassword(self) -> str:
@@ -35,6 +35,10 @@ class PromptUserInputHandler(BasePromptUserInputHandler):
                 print("Invalid Account Name, Please try Again:")
             accountName = self.getUserInput('Please Enter Account Name:')
         return accountName
+
+    def getWebSiteServiceName(self) -> str:
+        WebSiteServiceName = self.getUserInput('Please Enter Website/Service Name:')
+        return WebSiteServiceName
 
     def HandleLoginResult(self, loginResult:LogInReturnStatus):
         print(f"{loginResult.message}, status:{loginResult.status}")

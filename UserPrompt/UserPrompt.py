@@ -4,6 +4,7 @@ from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
+from PasswordManager.MainPasswordManager import MainPasswordManager
 from Service.EncryptionService import EncryptionService
 from Service.PasswordService import PasswordService
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
@@ -24,12 +25,14 @@ class UserPrompt(cmd.Cmd):
                  userPromptHandler:PromptUserInputHandler,
                  authenticationService:AuthenticationService,
                  mfaManagerService:MfaManagerService,
-                 registrationService:RegistrationService):
+                 registrationService:RegistrationService,
+                 mainPasswordManager:MainPasswordManager):
         super().__init__()
         self._userPromptHandler = userPromptHandler
         self._authenticationService = authenticationService
         self._mfaManagerService = mfaManagerService
         self._registrationService = registrationService
+        self._mainPasswordManager = mainPasswordManager
 
     def __GetPassword(self, encrypt=False):
         if self._authenticationService.isAuthnticated():
@@ -77,6 +80,27 @@ class UserPrompt(cmd.Cmd):
         registrationResult = self._registrationService.register(password)
         self._userPromptHandler.HandleregistrationResult(registrationResult)
 
+    def do_addPassword(self, arg):
+        'Add New Password'
+        accountName = self._userPromptHandler.getWebSiteServiceName()
+        password = self._userPromptHandler.getInputPassword()
+
+        self._mainPasswordManager.addPassword(accountName, password)
+
+        # Clean-up
+        password = None
+
+    def do_getPassword(self, arg):
+        'Get Saved Password'
+        accountName = self._userPromptHandler.getWebSiteServiceName()
+
+        savedPass = self._mainPasswordManager.getPassword(accountName)
+
+        # Clean-up
+        password = None
+        print(f'Password of {accountName} = {savedPass}.')
+
+
     def do_exit(self, arg):
         'close the window, and exit.'
         self._userPromptHandler.Exit()
@@ -92,8 +116,15 @@ def InitAll():
 
     registrationService = RegistrationService(passwordService, encryptionService, mfaManagerService)
     authenticationService = AuthenticationService(mfaManagerService)
+    mainPasswordManager = MainPasswordManager(authenticationService)
 
-    userPrompt = UserPrompt(promptUserInputHandler, authenticationService, mfaManagerService, registrationService)
+    userPrompt = UserPrompt(
+        promptUserInputHandler,
+        authenticationService,
+        mfaManagerService,
+        registrationService,
+        mainPasswordManager
+    )
 
 
     userPrompt.cmdloop()

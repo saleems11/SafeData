@@ -13,24 +13,27 @@ class AuthenticationService:
         self._mfaManagerService = mfaManagerService
         self.mfaManager = None
         self.gpassword = None
+        self.gpasswordKey = None
 
     def isAuthnticated(self) -> bool:
-        return self._mfaManagerService.IsMfaActive() and self.getPassowrd() is not None
+        return self._mfaManagerService.IsMfaActive() and self.gpasswordKey is not None
 
     def login(self, password, mfa) -> LogInReturnStatus:
         passwordKey = PasswordService.HashifyPassword(password)
         logInReult = self.__tryLogin(passwordKey)
-        passwordKey = None
 
         if not logInReult.IsSucceded():
             return LogInReturnStatus(logInReult.status, logInReult.message)
 
         mfaKeyDecrebtedKey = logInReult.MfaKey
         mfaLoginResult = self._mfaManagerService.logIn(mfa, mfaKeyDecrebtedKey)
-        mfaKeyDecrebtedKey = None
 
         if mfaLoginResult.IsSucceded():
-            self.__setPassword(password)
+            self.gpasswordKey = passwordKey
+
+        mfaKeyDecrebtedKey = None
+        password = None
+
         return mfaLoginResult
 
 
@@ -46,8 +49,10 @@ class AuthenticationService:
             return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login.", ex)
 
 
-    def getPassowrd(self):
-        pass
+    def getPassowrdKey(self):
+        if not self.isAuthnticated():
+            raise Exception('UnAuthenticated')
+        return self.gpasswordKey
 
     def __setPassword(self, password):
         self.gpassword = password

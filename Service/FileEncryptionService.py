@@ -2,41 +2,52 @@ from Service.AccessService import AccessService
 from Service.EncryptionService import EncryptionService
 import os
 
+from Service.FileManagement import FileManagement
+
+
 class FileEncryptionService:
-    encreptionFileType = ".enc"
-    acceptedToEncrypteFileType = '.txt'
 
     def __init__(self):
         pass
 
     @staticmethod
-    def encrypt_file(filePath, key):
-        if not AccessService.validateCanAccessPath(filePath):
-            raise Exception('CAN NOT ACCESS THIS PATH.')
+    def create_encrypted_file(filePath, key, delete=True) -> str:
+        AccessService.tryAccessPath(filePath)
 
-        with open(filePath, 'rb') as fo:
-            plaintext = fo.read()
+        plaintext = FileManagement.readFile(filePath)
         enc = EncryptionService.encrypt(plaintext, key)
-        with open(filePath[:-4] + FileEncryptionService.encreptionFileType, 'wb') as fo:
-            fo.write(enc)
-        os.remove(filePath)
+
+        encFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Encreption)
+        FileManagement.WriteInFile(encFilePath, enc, inBytes=True)
+
+        if delete:
+            os.remove(filePath)
+
+        # Clean-up
+        plaintext = None
+
+        return encFilePath
 
     @staticmethod
-    def decrypt_file(filePath, key):
-        if not AccessService.validateCanAccessPath(filePath):
-            raise Exception('CAN NOT ACCESS THIS PATH.')
+    def create_decrypted_file(filePath, key, delete=True) -> str:
+        AccessService.tryAccessPath(filePath)
 
         dec = FileEncryptionService.decryptFileContent(filePath, key)
-        with open(filePath[:-4] + FileEncryptionService.acceptedToEncrypteFileType, 'wb') as fo:
-            fo.write(dec)
-        os.remove(filePath)
-        # user message
-        print("File Decrypted Successfully")
+
+        decFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Txt)
+        FileManagement.WriteInFile(decFilePath, dec)
+
+        if delete:
+            os.remove(filePath)
+
+        # Clean-up
+        dec = None
+
+        return decFilePath
 
     @staticmethod
     def decryptFileContent(filePath, key, decode = False):
-        if not AccessService.validateCanAccessPath(filePath):
-            raise Exception('CAN NOT ACCESS THIS PATH.')
+        AccessService.tryAccessPath(filePath)
 
         with open(filePath, 'rb') as fo:
             ciphertext = fo.read()

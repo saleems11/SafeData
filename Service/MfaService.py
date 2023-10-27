@@ -44,7 +44,9 @@ class MfaService:
         im.show()
 
     def Validate(self, Pin):
-        print(f'Mfa correct value: {self._TOTP.now()} and you entered {Pin}.')
+        # Pin is the mfa key
+        # datetime.now() - uses the local time of the machine, it must be the same timezone with the Mfa app.
+        # 1 - is used to handle cases where the diff bettwen the Mfa server/client is bigger than 30 sec.
         return self._TOTP.verify(Pin, datetime.now(), 1)
 
     @staticmethod

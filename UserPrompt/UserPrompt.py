@@ -3,6 +3,7 @@ from AppConfig.Consts import Consts
 from Authentication.AuthenticationService import AuthenticationService
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
+from Exceptions.AuthenticationException import AuthenticationException
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
@@ -78,66 +79,99 @@ class UserPrompt(cmd.Cmd):
 
     def do_setUpEnv(self, arg):
         'Set Up is required to use the application.'
-        self.__setUpEnv(True)
-        self._configuration.printConfigurations()
+        try:
+            self.__setUpEnv(True)
+            self._configuration.printConfigurations()
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
 
     def do_login(self, arg):
         'Login to your account, requires password and Mfa(your should be already registered).'
         # Add later locking mechanisem
-        password = self.__GetPassword()
-        mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
+        try:
+            password = self.__GetPassword()
+            mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
 
-        loginResult = self._authenticationService.login(password, mfaKey)
-        self._userPromptHandler.HandleLoginResult(loginResult)
+            loginResult = self._authenticationService.login(password, mfaKey)
+            self._userPromptHandler.HandleLoginResult(loginResult)
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_register(self, arg):
         'Register your account so you can encrypte and decrepte Data'
-        accountName = self._userPromptHandler.getAccountMfaName()
-        self._mfaManagerService.CreateRegistrationQR(accountName)
+        try:
+            accountName = self._userPromptHandler.getAccountMfaName()
+            self._mfaManagerService.CreateRegistrationQR(accountName)
 
-        mfaValidationResult = self.__ValidateMfa()
-        self._userPromptHandler.HandleregistrationResult(mfaValidationResult)
-        if not mfaValidationResult.IsSucceded():
-            return
+            mfaValidationResult = self.__ValidateMfa()
+            self._userPromptHandler.HandleregistrationResult(mfaValidationResult)
+            if not mfaValidationResult.IsSucceded():
+                return
 
-        password = self.__GetPassword(True)
-        registrationResult = self._registrationService.register(password)
-        self._userPromptHandler.HandleregistrationResult(registrationResult)
+            password = self.__GetPassword(True)
+            registrationResult = self._registrationService.register(password)
+            self._userPromptHandler.HandleregistrationResult(registrationResult)
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_addPassword(self, arg):
         'Add New Password, it will be saved in a file where you had set the SavedPasswordDirPath'
-        accountName = self._userPromptHandler.getWebSiteServiceName()
-        password = self._userPromptHandler.getInputPassword()
+        try:
+            accountName = self._userPromptHandler.getWebSiteServiceName()
+            password = self._userPromptHandler.getInputPassword()
 
-        self._mainPasswordManager.addPassword(accountName, password)
-        # Clean-up
-        password = None
+            self._mainPasswordManager.addPassword(accountName, password)
+            # Clean-up
+            password = None
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_getPassword(self, arg):
         'Get Saved Password'
-        accountName = self._userPromptHandler.getWebSiteServiceName()
+        try:
+            accountName = self._userPromptHandler.getWebSiteServiceName()
 
-        savedPass = self._mainPasswordManager.getPassword(accountName)
-        print(f'Password of {accountName} = {savedPass}.')
+            savedPass = self._mainPasswordManager.getPassword(accountName)
+            print(f'Password of {accountName} = {savedPass}.')
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_encFile(self, arg):
         'Enter a valid file path (.txt file only will be able to encrypt) and it will encrypted.'
-        filePath = self._userPromptHandler.getFilePath('encrypt')
-        self._fileEncryptionManager.encryptFile(filePath)
-        print(f'File {filePath}, had been encrypted Succesfuly.')
+        try:
+            filePath = self._userPromptHandler.getFilePath('encrypt')
+
+            self._fileEncryptionManager.encryptFile(filePath)
+            print(f'File {filePath}, had been encrypted Succesfuly.')
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_decFile(self, arg):
         'Enter a valid file path (.txt file only will be able to decrypt) and it will decrypted.'
-        filePath = self._userPromptHandler.getFilePath('decrypt')
-        self._fileEncryptionManager.decryptFile(filePath)
-        print(f'File {filePath}, had been decrypted Succesfuly.')
-
+        try:
+            filePath = self._userPromptHandler.getFilePath('decrypt')
+            self._fileEncryptionManager.decryptFile(filePath)
+            print(f'File {filePath}, had been decrypted Succesfuly.')
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_exit(self, arg):
         'close the window, and exit.'
         self._userPromptHandler.Exit()
         return True
+
+    def __handleMainExcptions(self, ex, customMessage=""):
+        if isinstance(ex, AuthenticationException):
+            print(f'{ex} - Need to authenticate first.{customMessage}')
+            return True
 
 
 

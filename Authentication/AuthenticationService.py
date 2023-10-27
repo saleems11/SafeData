@@ -1,5 +1,6 @@
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
+from Exceptions.AuthenticationException import AuthenticationException
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.PasswordLogInReturnStatus import PasswordLogInReturnStatus
 from Model.Status import Status
@@ -56,7 +57,7 @@ class AuthenticationService:
 
     def getPassowrdKey(self):
         if not self.isAuthnticated():
-            raise Exception('UnAuthenticated')
+            raise AuthenticationException('Not Authenticated')
         return self.gpasswordKey
 
     def __setPassword(self, password):

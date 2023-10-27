@@ -1,8 +1,30 @@
 from Model.LogInReturnStatus import LogInReturnStatus
+from Service.FileManagement import FileManagement
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
 
 
 class PromptUserInputHandler(BasePromptUserInputHandler):
+
+    def __getValidFilePath(self, msg, errorMsg="This is invalid Path."):
+        while True:
+            filePath = self.getUserInput(msg)
+            if FileManagement.DoesPathExist(filePath):
+                break
+            print(errorMsg)
+
+        return filePath
+
+    def getAllowEncDecUnderPath(self) -> str:
+        msg = "Please Enter where you to be able to encrypt you'r file\n"\
+              "(Please Note that Encryption/Decryption will be applied under you'r selected Path):"
+
+        return self.__getValidFilePath(msg)
+
+    def getSavedPasswordsFileLocation(self) -> str:
+        msg = "Please Enter where you want to save you'r password\n"\
+              "(Please Note that Encrypted and Decrypted files will stay in the same location):"
+
+        return self.__getValidFilePath(msg)
 
     def getInputPassword(self) -> str:
         password = self.getUserInput("Please Enter the password:")
@@ -39,6 +61,11 @@ class PromptUserInputHandler(BasePromptUserInputHandler):
     def getWebSiteServiceName(self) -> str:
         WebSiteServiceName = self.getUserInput('Please Enter Website/Service Name:')
         return WebSiteServiceName
+
+    def getFilePath(self, toMsg='') -> str:
+        to = '' if len(toMsg) == 0 else f' to {toMsg}'
+        filePath = self.getUserInput(f'Please Enter File path{to}:')
+        return filePath
 
     def HandleLoginResult(self, loginResult:LogInReturnStatus):
         print(f"{loginResult.message}, status:{loginResult.status}")

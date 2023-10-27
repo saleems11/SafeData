@@ -1,5 +1,6 @@
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
+from Exceptions.AuthenticationException import AuthenticationException
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.PasswordLogInReturnStatus import PasswordLogInReturnStatus
 from Model.Status import Status
@@ -9,8 +10,13 @@ from Service.PasswordService import PasswordService
 
 class AuthenticationService:
 
-    def __init__(self, mfaManagerService:MfaManagerService):
+    def __init__(self,
+                 mfaManagerService:MfaManagerService,
+                 registrationService:RegistrationService,
+                 fileEncryptionService:FileEncryptionService):
         self._mfaManagerService = mfaManagerService
+        self._registrationService = registrationService
+        self._fileEncryptionService = fileEncryptionService
         self.mfaManager = None
         self.gpassword = None
         self.gpasswordKey = None
@@ -39,8 +45,8 @@ class AuthenticationService:
 
     def __tryLogin(self, passwordKey) -> PasswordLogInReturnStatus:
         try:
-            mfaKeyDecrebtedKey = FileEncryptionService.decryptFileContent(
-                RegistrationService.registartionFilePath,
+            mfaKeyDecrebtedKey = self._fileEncryptionService.decryptFileContent(
+                self._registrationService.registartionFilePath,
                 passwordKey,
                 True
             )
@@ -51,7 +57,7 @@ class AuthenticationService:
 
     def getPassowrdKey(self):
         if not self.isAuthnticated():
-            raise Exception('UnAuthenticated')
+            raise AuthenticationException('Not Authenticated')
         return self.gpasswordKey
 
     def __setPassword(self, password):

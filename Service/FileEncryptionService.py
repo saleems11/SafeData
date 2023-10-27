@@ -1,3 +1,4 @@
+from AppConfig.Consts import Consts
 from Service.AccessService import AccessService
 from Service.EncryptionService import EncryptionService
 import os
@@ -7,12 +8,12 @@ from Service.FileManagement import FileManagement
 
 class FileEncryptionService:
 
-    def __init__(self):
-        pass
+    def __init__(self, accessService: AccessService):
+        self._accessService = accessService
 
-    @staticmethod
-    def create_encrypted_file(filePath, key, delete=True) -> str:
-        AccessService.tryAccessPath(filePath)
+
+    def create_encrypted_file(self, filePath, key, delete=True) -> str:
+        self.fileValidation(filePath)
 
         plaintext = FileManagement.readFile(filePath)
         enc = EncryptionService.encrypt(plaintext, key)
@@ -28,14 +29,25 @@ class FileEncryptionService:
 
         return encFilePath
 
-    @staticmethod
-    def create_decrypted_file(filePath, key, delete=True) -> str:
-        AccessService.tryAccessPath(filePath)
 
-        dec = FileEncryptionService.decryptFileContent(filePath, key)
+    def read_encrypted_file(self, filePath, key) -> str:
+        self.fileValidation(filePath)
 
+        dec = self.decryptFileContent(filePath, key, True)
+        return dec
+
+
+    def create_decrypted_file(self, filePath, key, delete=True) -> str:
+        self.fileValidation(filePath)
+
+        dec = self.decryptFileContent(filePath, key, True)
         decFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Txt)
-        FileManagement.WriteInFile(decFilePath, dec)
+
+        try:
+            FileManagement.WriteInFile(decFilePath, dec)
+        except FileExistsError as ex:
+            os.remove(decFilePath)
+            raise ex
 
         if delete:
             os.remove(filePath)
@@ -45,13 +57,18 @@ class FileEncryptionService:
 
         return decFilePath
 
-    @staticmethod
-    def decryptFileContent(filePath, key, decode = False):
-        AccessService.tryAccessPath(filePath)
+
+    def fileValidation(self, filePath):
+        FileManagement.DoesPathExist(filePath, True)
+        self._accessService.tryAccessPath(filePath)
+
+
+    def decryptFileContent(self, filePath, key, decode = False):
+        self._accessService.tryAccessPath(filePath)
 
         with open(filePath, 'rb') as fo:
             ciphertext = fo.read()
             dec = EncryptionService.decrypt(ciphertext, key)
             if decode:
-                dec = dec.decode()
+                dec = dec.decode(Consts.encoding)
             return dec

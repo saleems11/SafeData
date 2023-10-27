@@ -1,6 +1,6 @@
 import gc
 
-from AppConsts.Consts import Consts
+from AppConfig.Configuration import Configuration
 from Authentication.AuthenticationService import AuthenticationService
 from Service.FileEncryptionService import FileEncryptionService
 from Service.FileManagement import FileManagement
@@ -8,9 +8,13 @@ from Service.FileManagement import FileManagement
 
 class MainPasswordManager:
 
-    def __init__(self, authenticationService:AuthenticationService, defaultDir=Consts.SavedPasswordDirPath):
+    def __init__(self,
+                 authenticationService:AuthenticationService,
+                 fileEncryptionService:FileEncryptionService,
+                 configuration:Configuration):
         self._authenticationService = authenticationService
-        self._defaultDir = defaultDir
+        self._fileEncryptionService = fileEncryptionService
+        self._defaultDir = configuration.SavedPasswordDirPath
         self.initSavedPasswordDir()
 
     def addPassword(self, serviceName, password):
@@ -22,7 +26,7 @@ class MainPasswordManager:
             FileManagement.WriteInFile(fileFullPath, password)
 
             key = self._authenticationService.getPassowrdKey()
-            FileEncryptionService.create_encrypted_file(fileFullPath, key)
+            self._fileEncryptionService.create_encrypted_file(fileFullPath, key)
         except Exception:
             FileManagement.deleteFile(fileFullPath)
             raise
@@ -35,15 +39,13 @@ class MainPasswordManager:
     def getPassword(self, serviceName):
         'Throw exception'
         fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir, FileManagement.Encreption)
-        if not FileManagement.isFileExist(fileFullPath):
+        if not FileManagement.DoesPathExist(fileFullPath):
             raise Exception(f'No matching passwrod for this service found :{serviceName}.')
 
         key = self._authenticationService.getPassowrdKey()
-        decFilePath = FileEncryptionService.create_decrypted_file(fileFullPath, key)
-        decPassword = FileManagement.readFile(decFilePath)
+        decPassword = self._fileEncryptionService.read_encrypted_file(fileFullPath, key)
 
         # Clean-up
-        password = None
         key = None
         collected = gc.collect()
 

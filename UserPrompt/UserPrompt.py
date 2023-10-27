@@ -1,17 +1,21 @@
-from AppConsts.Consts import Consts
+from AppConfig.Configuration import Configuration
+from AppConfig.Consts import Consts
 from Authentication.AuthenticationService import AuthenticationService
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
+from Exceptions.AuthenticationException import AuthenticationException
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
+from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from PasswordManager.MainPasswordManager import MainPasswordManager
+from Service.AccessService import AccessService
 from Service.EncryptionService import EncryptionService
+from Service.FileEncryptionService import FileEncryptionService
 from Service.PasswordService import PasswordService
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
 from UserInput.PromptUserInputHandler import PromptUserInputHandler
 
 import cmd
-import sys
 
 
 class UserPrompt(cmd.Cmd):
@@ -26,13 +30,20 @@ class UserPrompt(cmd.Cmd):
                  authenticationService:AuthenticationService,
                  mfaManagerService:MfaManagerService,
                  registrationService:RegistrationService,
-                 mainPasswordManager:MainPasswordManager):
+                 mainPasswordManager:MainPasswordManager,
+                 fileEncryptionManager:FileEncryptionManager,
+                 configuration:Configuration):
         super().__init__()
         self._userPromptHandler = userPromptHandler
         self._authenticationService = authenticationService
         self._mfaManagerService = mfaManagerService
         self._registrationService = registrationService
         self._mainPasswordManager = mainPasswordManager
+        self._fileEncryptionManager = fileEncryptionManager
+        self._configuration = configuration
+
+        self.__setUpEnv(False, True)
+
 
     def __GetPassword(self, encrypt=False):
         if self._authenticationService.isAuthnticated():
@@ -57,77 +68,138 @@ class UserPrompt(cmd.Cmd):
         return mfaValidationResult if mfaValidationResult is not None \
                    else LogInReturnStatus(Status.RegistrationFailedToManyAttemps, "Registration Failed.")
 
-    def do_login(self, arg):
-        'Login to your account, requires password and Mfa(your should be already registered)'
-        # Add later locking mechanisem
-        password = self.__GetPassword()
-        mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
+    def __setUpEnv(self, forceUpdate=False, initIsCalling=False):
+        if forceUpdate or not self._configuration.IsConstsAreSetUpSuccesfuly():
+            allowEncDecUnderPath = self._userPromptHandler.getAllowEncDecUnderPath()
+            savedPasswordsFileLocation = self._userPromptHandler.getSavedPasswordsFileLocation()
+            self._configuration.setUpConsts(allowEncDecUnderPath, savedPasswordsFileLocation)
 
-        loginResult = self._authenticationService.login(password, mfaKey)
-        self._userPromptHandler.HandleLoginResult(loginResult)
+        if initIsCalling and self._configuration.IsInDebugMode():
+            self._configuration.printConfigurations()
+
+    def do_setUpEnv(self, arg):
+        'Set Up is required to use the application.'
+        try:
+            self.__setUpEnv(True)
+            self._configuration.printConfigurations()
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
+
+
+    def do_login(self, arg):
+        'Login to your account, requires password and Mfa(your should be already registered).'
+        # Add later locking mechanisem
+        try:
+            password = self.__GetPassword()
+            mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
+
+            loginResult = self._authenticationService.login(password, mfaKey)
+            self._userPromptHandler.HandleLoginResult(loginResult)
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_register(self, arg):
         'Register your account so you can encrypte and decrepte Data'
-        accountName = self._userPromptHandler.getAccountMfaName()
-        self._mfaManagerService.CreateRegistrationQR(accountName)
+        try:
+            accountName = self._userPromptHandler.getAccountMfaName()
+            self._mfaManagerService.CreateRegistrationQR(accountName)
 
-        mfaValidationResult = self.__ValidateMfa()
-        self._userPromptHandler.HandleregistrationResult(mfaValidationResult)
-        if not mfaValidationResult.IsSucceded():
-            return
+            mfaValidationResult = self.__ValidateMfa()
+            self._userPromptHandler.HandleregistrationResult(mfaValidationResult)
+            if not mfaValidationResult.IsSucceded():
+                return
 
-        password = self.__GetPassword(True)
-        registrationResult = self._registrationService.register(password)
-        self._userPromptHandler.HandleregistrationResult(registrationResult)
+            password = self.__GetPassword(True)
+            registrationResult = self._registrationService.register(password)
+            self._userPromptHandler.HandleregistrationResult(registrationResult)
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_addPassword(self, arg):
-        'Add New Password'
-        accountName = self._userPromptHandler.getWebSiteServiceName()
-        password = self._userPromptHandler.getInputPassword()
-
+        'Add New Password, it will be saved in a file where you had set the SavedPasswordDirPath'
         try:
+            accountName = self._userPromptHandler.getWebSiteServiceName()
+            password = self._userPromptHandler.getInputPassword()
+
             self._mainPasswordManager.addPassword(accountName, password)
             # Clean-up
             password = None
         except Exception as ex:
-            print(f'Failed to add the password, ex={ex}.')
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_getPassword(self, arg):
         'Get Saved Password'
-        accountName = self._userPromptHandler.getWebSiteServiceName()
-
         try:
+            accountName = self._userPromptHandler.getWebSiteServiceName()
+
             savedPass = self._mainPasswordManager.getPassword(accountName)
             print(f'Password of {accountName} = {savedPass}.')
         except Exception as ex:
-            print(f'Failed to load the password, ex={ex}.')
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
+    def do_encFile(self, arg):
+        'Enter a valid file path (.txt file only will be able to encrypt) and it will encrypted.'
+        try:
+            filePath = self._userPromptHandler.getFilePath('encrypt')
+
+            self._fileEncryptionManager.encryptFile(filePath)
+            print(f'File {filePath}, had been encrypted Succesfuly.')
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
+
+    def do_decFile(self, arg):
+        'Enter a valid file path (.txt file only will be able to decrypt) and it will decrypted.'
+        try:
+            filePath = self._userPromptHandler.getFilePath('decrypt')
+            self._fileEncryptionManager.decryptFile(filePath)
+            print(f'File {filePath}, had been decrypted Succesfuly.')
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
 
     def do_exit(self, arg):
         'close the window, and exit.'
         self._userPromptHandler.Exit()
         return True
 
+    def __handleMainExcptions(self, ex, customMessage=""):
+        if isinstance(ex, AuthenticationException):
+            print(f'{ex} - Need to authenticate first.{customMessage}')
+            return True
+
 
 
 def InitAll():
+    configuration = Configuration()
     promptUserInputHandler = PromptUserInputHandler()
     mfaManagerService = MfaManagerService()
     encryptionService = EncryptionService()
     passwordService = PasswordService()
 
-    registrationService = RegistrationService(passwordService, encryptionService, mfaManagerService)
-    authenticationService = AuthenticationService(mfaManagerService)
-    mainPasswordManager = MainPasswordManager(authenticationService)
+    accessService = AccessService(configuration)
+
+    fileEncryptionService = FileEncryptionService(accessService)
+    registrationService = RegistrationService(passwordService, encryptionService, mfaManagerService, configuration)
+
+    authenticationService = AuthenticationService(mfaManagerService, registrationService, fileEncryptionService)
+    mainPasswordManager = MainPasswordManager(authenticationService, fileEncryptionService, configuration)
+    fileEncryptionManager = FileEncryptionManager(authenticationService, fileEncryptionService)
 
     userPrompt = UserPrompt(
         promptUserInputHandler,
         authenticationService,
         mfaManagerService,
         registrationService,
-        mainPasswordManager
+        mainPasswordManager,
+        fileEncryptionManager,
+        configuration
     )
-
 
     userPrompt.cmdloop()
 

@@ -5,7 +5,7 @@ import qrcode
 from PIL import Image
 import io
 
-from AppConsts.Consts import Consts
+from AppConfig.Consts import Consts
 
 
 class MfaService:

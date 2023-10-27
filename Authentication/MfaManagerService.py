@@ -1,4 +1,4 @@
-from AppConsts.Consts import Consts
+from AppConfig.Consts import Consts
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
 from Service.MfaService import MfaService

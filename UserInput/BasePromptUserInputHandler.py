@@ -1,4 +1,4 @@
-from AppConsts.Consts import Consts
+from AppConfig.Consts import Consts
 from Model.InputStatus import InputStatus
 from Model.UserInputResult import UserInputResult
 from UserInput.IUserInputHandler import IUserInputHandler
@@ -16,7 +16,8 @@ class BasePromptUserInputHandler(IUserInputHandler):
         return f"Wellcome to {Consts.APP_NAME}," \
                f"To Exist Please Enter anywhere {BasePromptUserInputHandler.BREAK_INPUT}\n" \
                f"You can manage your secret txt file here (they may contain your password).\n" \
-               f"Use help/? to help you with the command, formate help [cmd]."
+               f"Use help/? to help you with the command, formate help [cmd].\n" \
+               f"Use setUpEnv cmd to setup you env first."
 
     def getUserInput(self, message) -> str:
         userInput = input(message)

@@ -1,6 +1,7 @@
 import os
 
-from AppConsts.Consts import Consts
+from AppConfig.Configuration import Configuration
+from AppConfig.Consts import Consts
 from Authentication.MfaManagerService import MfaManagerService
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
@@ -15,20 +16,23 @@ class RegistrationService:
     UserRegistrationFolderForMfa = 'MfaRegistration'
 
     registartionFileNameAndType = f'{UserRegistrationFileNameForMfa}{FileManagement.Encreption}'
-    registartionFolderPath = os.path.join(Consts.SavedPasswordDirPath, UserRegistrationFolderForMfa)
-    registartionFilePath = os.path.join(registartionFolderPath, registartionFileNameAndType)
 
     def __init__(self,
                  passwordService:PasswordService,
                  encryptionService:EncryptionService,
-                 mfaManagerService:MfaManagerService):
+                 mfaManagerService:MfaManagerService,
+                 configuration:Configuration):
         self._passwordService = passwordService
         self._encryptionService = encryptionService
         self._mfaManagerService = mfaManagerService
-        self.__CreateRegitrationSaveLocationIfNotExist()
+
+        self.registartionFolderPath = os.path.join(configuration.SavedPasswordDirPath, RegistrationService.UserRegistrationFolderForMfa)
+        self.registartionFilePath = os.path.join(self.registartionFolderPath, RegistrationService.registartionFileNameAndType)
 
     def register(self, password):
         try:
+            self.__CreateRegitrationSaveLocationIfNotExist()
+
             self.SaveRegistrationData(password)
             return LogInReturnStatus(Status.Succed, 'Registartion Succeded.')
 

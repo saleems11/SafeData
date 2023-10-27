@@ -36,7 +36,7 @@ class UserPrompt(cmd.Cmd):
 
     def __GetPassword(self, encrypt=False):
         if self._authenticationService.isAuthnticated():
-            return self._authenticationService.getPassowrd()
+            return self._authenticationService.getPassowrdKey()
         if encrypt:
             return self._userPromptHandler.getValidPassword()
         return self._userPromptHandler.getInputPassword()
@@ -85,20 +85,22 @@ class UserPrompt(cmd.Cmd):
         accountName = self._userPromptHandler.getWebSiteServiceName()
         password = self._userPromptHandler.getInputPassword()
 
-        self._mainPasswordManager.addPassword(accountName, password)
-
-        # Clean-up
-        password = None
+        try:
+            self._mainPasswordManager.addPassword(accountName, password)
+            # Clean-up
+            password = None
+        except Exception as ex:
+            print(f'Failed to add the password, ex={ex}.')
 
     def do_getPassword(self, arg):
         'Get Saved Password'
         accountName = self._userPromptHandler.getWebSiteServiceName()
 
-        savedPass = self._mainPasswordManager.getPassword(accountName)
-
-        # Clean-up
-        password = None
-        print(f'Password of {accountName} = {savedPass}.')
+        try:
+            savedPass = self._mainPasswordManager.getPassword(accountName)
+            print(f'Password of {accountName} = {savedPass}.')
+        except Exception as ex:
+            print(f'Failed to load the password, ex={ex}.')
 
 
     def do_exit(self, arg):

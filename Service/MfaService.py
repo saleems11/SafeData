@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pyotp
 import qrcode
 from PIL import Image
@@ -28,7 +30,7 @@ class MfaService:
         self.ShowQR(uri)
 
     def GenerateUserBaseUri(self, AccountName):
-        uri = self._TOTP.provisioning_uri(name=AccountName, issuer_name=f'{Consts.APP_NAME}-')
+        uri = self._TOTP.provisioning_uri(name=AccountName, issuer_name=f'{Consts.APP_NAME} ')
         return uri
 
     @staticmethod
@@ -42,7 +44,8 @@ class MfaService:
         im.show()
 
     def Validate(self, Pin):
-        return self._TOTP.verify(Pin)
+        print(f'Mfa correct value: {self._TOTP.now()} and you entered {Pin}.')
+        return self._TOTP.verify(Pin, datetime.now(), 1)
 
     @staticmethod
     def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey):

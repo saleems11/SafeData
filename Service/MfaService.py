@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pyotp
 import qrcode
 from PIL import Image
@@ -28,7 +30,7 @@ class MfaService:
         self.ShowQR(uri)
 
     def GenerateUserBaseUri(self, AccountName):
-        uri = self._TOTP.provisioning_uri(name=AccountName, issuer_name=f'{Consts.APP_NAME}-')
+        uri = self._TOTP.provisioning_uri(name=AccountName, issuer_name=f'{Consts.APP_NAME} ')
         return uri
 
     @staticmethod
@@ -42,7 +44,10 @@ class MfaService:
         im.show()
 
     def Validate(self, Pin):
-        return self._TOTP.verify(Pin)
+        # Pin is the mfa key
+        # datetime.now() - uses the local time of the machine, it must be the same timezone with the Mfa app.
+        # 1 - is used to handle cases where the diff bettwen the Mfa server/client is bigger than 30 sec.
+        return self._TOTP.verify(Pin, datetime.now(), 1)
 
     @staticmethod
     def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey):

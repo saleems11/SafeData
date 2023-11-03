@@ -11,7 +11,7 @@ The User Enter his password and Mfa pin, the password is Hashified
 then the Mfa key is decrypted, using the MFA key the MFA pin is validated. 
 
 ###### Encryption Process
-Using the hashed user password key the passwords are encrypted.
+Using the hashed mfa key the passwords are encrypted, also Gebbrish data is added.
 
 ###### Decryption Process
 Using the hashed user password key the passwords are decrypted. 

@@ -1,19 +1,16 @@
 import gc
 
 from AppConfig.Configuration import Configuration
-from Authentication.AuthenticationService import AuthenticationService
-from Service.FileEncryptionService import FileEncryptionService
+from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from Service.FileManagement import FileManagement
 
 
 class MainPasswordManager:
 
     def __init__(self,
-                 authenticationService:AuthenticationService,
-                 fileEncryptionService:FileEncryptionService,
+                 fileEncryptionManager:FileEncryptionManager,
                  configuration:Configuration):
-        self._authenticationService = authenticationService
-        self._fileEncryptionService = fileEncryptionService
+        self._fileEncryptionManager = fileEncryptionManager
         self._defaultDir = configuration.SavedPasswordDirPath
         self.initSavedPasswordDir()
 
@@ -24,9 +21,15 @@ class MainPasswordManager:
         try:
             fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir)
             FileManagement.WriteInFile(fileFullPath, password)
+        except FileExistsError as ex:
+            raise
+        except Exception:
+            FileManagement.deleteFile(fileFullPath)
+            raise
 
-            key = self._authenticationService.getPassowrdKey()
-            self._fileEncryptionService.create_encrypted_file(fileFullPath, key)
+        # encrypt the File
+        try:
+            self._fileEncryptionManager.encryptFile(fileFullPath)
         except Exception:
             FileManagement.deleteFile(fileFullPath)
             raise
@@ -38,12 +41,11 @@ class MainPasswordManager:
 
     def getPassword(self, serviceName):
         'Throw exception'
-        fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir, FileManagement.Encreption)
+        fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir, FileManagement.Encryption)
         if not FileManagement.DoesPathExist(fileFullPath):
             raise Exception(f'No matching passwrod for this service found :{serviceName}.')
 
-        key = self._authenticationService.getPassowrdKey()
-        decPassword = self._fileEncryptionService.read_encrypted_file(fileFullPath, key)
+        decPassword = self._fileEncryptionManager.read_encrypted_file(fileFullPath)
 
         # Clean-up
         key = None

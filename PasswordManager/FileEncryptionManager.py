@@ -11,7 +11,7 @@ class FileEncryptionManager:
 
     def encryptFile(self, filePath):
         key = self._authenticationService.getPassowrdKey()
-        self._fileEncryptionService.create_encrypted_file(filePath, key)
+        self._fileEncryptionService.encrypted_file(filePath, key)
 
         # Clean-up
         key = None
@@ -24,3 +24,8 @@ class FileEncryptionManager:
         # Clean-up
         key = None
         collected = gc.collect()
+
+    def read_encrypted_file(self, filePath) -> str:
+        key = self._authenticationService.getPassowrdKey()
+        dec = self._fileEncryptionService.decryptFileContent(filePath, key)
+        return dec

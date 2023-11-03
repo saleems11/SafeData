@@ -1,9 +1,12 @@
 import os
+import pathlib
+
+from Exceptions.InvalidFileTypeException import InvalidFileTypeException
 
 
 class FileManagement:
     Txt = 'txt'
-    Encreption = 'enc'
+    Encryption = 'enc'
 
     @staticmethod
     def CreateDir(dirPath):
@@ -76,3 +79,22 @@ class FileManagement:
         if not FileManagement.DoesPathExist(filePath):
             raise Exception(f'File does not exist in this Path:{filePath}.')
         os.remove(filePath)
+
+    @staticmethod
+    def getFileType(filePath):
+        return pathlib.Path(filePath).suffix[1:]
+
+    @staticmethod
+    def ValidAbleToDecrypt(filePath):
+        fileType = FileManagement.getFileType(filePath)
+        if FileManagement.getFileType(filePath) == FileManagement.Encryption:
+            return
+        raise InvalidFileTypeException(FileManagement.Encryption, fileType, "Invalid File type")
+
+    @staticmethod
+    def ValidAbleToEncrypt(filePath):
+        fileType = FileManagement.getFileType(filePath)
+        if FileManagement.getFileType(filePath) == FileManagement.Txt:
+            return
+        raise InvalidFileTypeException(FileManagement.Txt, fileType, "Invalid File type")
+

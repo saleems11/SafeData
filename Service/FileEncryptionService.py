@@ -1,4 +1,3 @@
-from AppConfig.Consts import Consts
 from Exceptions.DecryptionException import DecryptionException
 from Service.AccessService import AccessService
 from Service.EncryptionService import EncryptionService
@@ -12,14 +11,19 @@ class FileEncryptionService:
     def __init__(self, accessService: AccessService):
         self._accessService = accessService
 
+    def create_encrypted_file(self, encFilePath, data, key:bytes):
+        # need to add path validation
+        enc = EncryptionService.encrypt(data, key)
+        FileManagement.WriteInFile(encFilePath, enc, inBytes=True)
 
-    def create_encrypted_file(self, filePath, key, delete=True) -> str:
+    def encrypted_file(self, filePath:str, key:bytes, delete=True) -> str:
         self.fileValidation(filePath)
+        FileManagement.ValidAbleToEncrypt(filePath)
 
-        plaintext = FileManagement.readFile(filePath)
+        plaintext = FileManagement.readFile(filePath, asbytes=False)
         enc = EncryptionService.encrypt(plaintext, key)
 
-        encFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Encreption)
+        encFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Encryption)
         FileManagement.WriteInFile(encFilePath, enc, inBytes=True)
 
         if delete:
@@ -31,17 +35,8 @@ class FileEncryptionService:
         return encFilePath
 
 
-    def read_encrypted_file(self, filePath, key) -> str:
-        self.fileValidation(filePath)
-
-        dec = self.decryptFileContent(filePath, key, True)
-        return dec
-
-
-    def create_decrypted_file(self, filePath, key, delete=True) -> str:
-        self.fileValidation(filePath)
-
-        dec = self.decryptFileContent(filePath, key, True)
+    def create_decrypted_file(self, filePath, key:bytes, delete=True) -> str:
+        dec = self.decryptFileContent(filePath, key)
         decFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Txt)
 
         try:
@@ -64,15 +59,14 @@ class FileEncryptionService:
         self._accessService.tryAccessPath(filePath)
 
 
-    def decryptFileContent(self, filePath, key, decode = False):
-        self._accessService.tryAccessPath(filePath)
+    def decryptFileContent(self, filePath, key:bytes):
+        self.fileValidation(filePath)
+        FileManagement.ValidAbleToDecrypt(filePath)
 
         try:
             with open(filePath, 'rb') as fo:
                 ciphertext = fo.read()
                 dec = EncryptionService.decrypt(ciphertext, key)
-                if decode:
-                    dec = dec.decode(Consts.encoding)
                 return dec
         except Exception as ex:
             raise DecryptionException(ex, ex)

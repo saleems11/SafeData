@@ -19,8 +19,7 @@ class AuthenticationService:
         self._registrationService = registrationService
         self._fileEncryptionService = fileEncryptionService
         self.mfaManager = None
-        self.gpassword = None
-        self.gpasswordKey = None
+        self.gpasswordKey: bytes = bytearray()
 
     def isAuthnticated(self) -> bool:
         return self._mfaManagerService.IsMfaActive() and self.gpasswordKey is not None
@@ -37,7 +36,7 @@ class AuthenticationService:
 
         if mfaLoginResult.IsSucceded():
             hashedMfaKey = PasswordService.HashifyPassword(mfaKeyDecrebtedKey)
-            self.gpasswordKey = hashedMfaKey
+            self.__setPassword(hashedMfaKey)
 
         mfaKeyDecrebtedKey = None
         password = None
@@ -49,8 +48,7 @@ class AuthenticationService:
         try:
             mfaKeyDecrebtedKey = self._fileEncryptionService.decryptFileContent(
                 self._registrationService.registartionFilePath,
-                passwordKey,
-                True
+                passwordKey
             )
             return PasswordLogInReturnStatus(Status.Succed, f"User password is correct", mfaKeyDecrebtedKey)
         except DecryptionException as ex:
@@ -58,10 +56,10 @@ class AuthenticationService:
                 return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login", ex)
 
 
-    def getPassowrdKey(self):
+    def getPassowrdKey(self) -> bytes:
         if not self.isAuthnticated():
             raise AuthenticationException('Not Authenticated')
         return self.gpasswordKey
 
-    def __setPassword(self, password):
-        self.gpassword = password
+    def __setPassword(self, password:bytes):
+        self.gpasswordKey = password

@@ -1,6 +1,7 @@
 import os
 
 from AppConfig.Configuration import Configuration
+from Exceptions.PathAccessException import PathAccessException
 
 
 class AccessService:
@@ -14,7 +15,7 @@ class AccessService:
 
     def tryAccessPath(self, path):
         if not self.validateCanAccessPath(path):
-            raise Exception(f'CAN NOT ACCESS THIS PATH, path={path}.')
+            raise PathAccessException(path, self._configuration.CanEncrypteUnder, f'CAN NOT ACCESS THIS PATH')
 
     def getValidDirPath(self, cur_dir, default_dir):
         dir_path = None

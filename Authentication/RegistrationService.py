@@ -6,6 +6,7 @@ from Authentication.MfaManagerService import MfaManagerService
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
 from Service.EncryptionService import EncryptionService
+from Service.FileEncryptionService import FileEncryptionService
 from Service.FileManagement import FileManagement
 from Service.PasswordService import PasswordService
 
@@ -15,15 +16,15 @@ class RegistrationService:
     UserRegistrationFileNameForMfa = 'secureMfa'
     UserRegistrationFolderForMfa = 'MfaRegistration'
 
-    registartionFileNameAndType = f'{UserRegistrationFileNameForMfa}{FileManagement.Encreption}'
+    registartionFileNameAndType = f'{UserRegistrationFileNameForMfa}.{FileManagement.Encryption}'
 
     def __init__(self,
                  passwordService:PasswordService,
-                 encryptionService:EncryptionService,
+                 fileEncryptionService:FileEncryptionService,
                  mfaManagerService:MfaManagerService,
                  configuration:Configuration):
         self._passwordService = passwordService
-        self._encryptionService = encryptionService
+        self._fileEncryptionService = fileEncryptionService
         self._mfaManagerService = mfaManagerService
 
         self.registartionFolderPath = os.path.join(configuration.SavedPasswordDirPath, RegistrationService.UserRegistrationFolderForMfa)
@@ -41,13 +42,10 @@ class RegistrationService:
             return LogInReturnStatus(Status.ExceptionOccured, 'Registartion Failed.')
 
     def SaveRegistrationData(self, password):
-        with open(self.registartionFilePath, "wb") as secMfaF:
-            mfaKeyWithValidationMessageBytes = self._mfaManagerService.createMfaKeyPlussValidationMessageInBytes()
+        mfaKeyWithValidationMessage = self._mfaManagerService.createMfaKeyPlussValidationMessage()
+        key = self._passwordService.HashifyPassword(password)
+        self._fileEncryptionService.create_encrypted_file(self.registartionFilePath, mfaKeyWithValidationMessage, key)
 
-            key = self._passwordService.HashifyPassword(password)
-            securedMfaKey = self._encryptionService.encrypt(mfaKeyWithValidationMessageBytes, key)
-
-            secMfaF.write(securedMfaKey)
 
     def __CreateRegitrationSaveLocationIfNotExist(self):
         FileManagement.CreateDir(self.registartionFolderPath)

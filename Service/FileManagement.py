@@ -98,3 +98,20 @@ class FileManagement:
             return
         raise InvalidFileTypeException(FileManagement.Txt, fileType, "Invalid File type")
 
+    @staticmethod
+    def getListOfFile(selectedPath, byType='all'):
+        subPathes = os.listdir(selectedPath)
+        matchedFilesList = []
+        for subPath in subPathes:
+            fullPath = os.path.join(selectedPath, subPath)
+
+            if not os.path.isfile(fullPath):
+                continue
+
+            if byType == 'all':
+                matchedFilesList.append(fullPath)
+                continue
+
+            if FileManagement.getFileType(fullPath) == byType:
+                matchedFilesList.append(fullPath)
+                continue

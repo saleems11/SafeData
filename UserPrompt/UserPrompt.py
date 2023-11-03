@@ -4,6 +4,9 @@ from Authentication.AuthenticationService import AuthenticationService
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
 from Exceptions.AuthenticationException import AuthenticationException
+from Exceptions.DecryptionException import DecryptionException
+from Exceptions.InvalidFileTypeException import InvalidFileTypeException
+from Exceptions.PathAccessException import PathAccessException
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
@@ -128,7 +131,7 @@ class UserPrompt(cmd.Cmd):
             # Clean-up
             password = None
         except Exception as ex:
-            handeled = self.__handleMainExcptions(ex)
+            handeled = self.__handleMainExcptions(ex, 'while adding new password')
             if not handeled: raise
 
     def do_getPassword(self, arg):
@@ -139,7 +142,7 @@ class UserPrompt(cmd.Cmd):
             savedPass = self._mainPasswordManager.getPassword(accountName)
             print(f'Password of {accountName} = {savedPass}.')
         except Exception as ex:
-            handeled = self.__handleMainExcptions(ex)
+            handeled = self.__handleMainExcptions(ex, "while trying to get password.")
             if not handeled: raise
 
     def do_encFile(self, arg):
@@ -172,6 +175,21 @@ class UserPrompt(cmd.Cmd):
         if isinstance(ex, AuthenticationException):
             print(f'{ex} - Need to authenticate first.{customMessage}')
             return True
+        if isinstance(ex, DecryptionException):
+            print(f'Unable to Decrypte the data.{customMessage}')
+            return True
+        if isinstance(ex, FileNotFoundError):
+            print(f'{ex} - Please enter a valid Path.{customMessage}')
+            return True
+        if isinstance(ex, FileExistsError):
+            print(f'The prev step Failed, please try again.{customMessage}')
+            return True
+        if isinstance(ex, InvalidFileTypeException):
+            print(f'{ex}.{customMessage}')
+            return True
+        if isinstance(ex, PathAccessException):
+            print(f'{ex}.{customMessage}')
+            return True
 
 
 
@@ -185,11 +203,11 @@ def InitAll():
     accessService = AccessService(configuration)
 
     fileEncryptionService = FileEncryptionService(accessService)
-    registrationService = RegistrationService(passwordService, encryptionService, mfaManagerService, configuration)
+    registrationService = RegistrationService(passwordService, fileEncryptionService, mfaManagerService, configuration)
 
     authenticationService = AuthenticationService(mfaManagerService, registrationService, fileEncryptionService)
-    mainPasswordManager = MainPasswordManager(authenticationService, fileEncryptionService, configuration)
     fileEncryptionManager = FileEncryptionManager(authenticationService, fileEncryptionService)
+    mainPasswordManager = MainPasswordManager(fileEncryptionManager, configuration)
 
     userPrompt = UserPrompt(
         promptUserInputHandler,

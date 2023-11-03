@@ -1,9 +1,12 @@
 import os
+import pathlib
+
+from Exceptions.InvalidFileTypeException import InvalidFileTypeException
 
 
 class FileManagement:
     Txt = 'txt'
-    Encreption = 'enc'
+    Encryption = 'enc'
 
     @staticmethod
     def CreateDir(dirPath):
@@ -47,7 +50,7 @@ class FileManagement:
     def DoesPathExist(path, raiseException=False):
         doesExist = os.path.exists(path)
         if raiseException and not doesExist:
-            raise Exception(f'Path does not exist, path:{path}.')
+            raise FileNotFoundError(f'Path does not exist, path:{path}.')
         return doesExist
 
     @staticmethod
@@ -76,3 +79,39 @@ class FileManagement:
         if not FileManagement.DoesPathExist(filePath):
             raise Exception(f'File does not exist in this Path:{filePath}.')
         os.remove(filePath)
+
+    @staticmethod
+    def getFileType(filePath):
+        return pathlib.Path(filePath).suffix[1:]
+
+    @staticmethod
+    def ValidAbleToDecrypt(filePath):
+        fileType = FileManagement.getFileType(filePath)
+        if FileManagement.getFileType(filePath) == FileManagement.Encryption:
+            return
+        raise InvalidFileTypeException(FileManagement.Encryption, fileType, "Invalid File type")
+
+    @staticmethod
+    def ValidAbleToEncrypt(filePath):
+        fileType = FileManagement.getFileType(filePath)
+        if FileManagement.getFileType(filePath) == FileManagement.Txt:
+            return
+        raise InvalidFileTypeException(FileManagement.Txt, fileType, "Invalid File type")
+
+    @staticmethod
+    def getListOfFile(selectedPath, byType='all'):
+        subPathes = os.listdir(selectedPath)
+        matchedFilesList = []
+        for subPath in subPathes:
+            fullPath = os.path.join(selectedPath, subPath)
+
+            if not os.path.isfile(fullPath):
+                continue
+
+            if byType == 'all':
+                matchedFilesList.append(fullPath)
+                continue
+
+            if FileManagement.getFileType(fullPath) == byType:
+                matchedFilesList.append(fullPath)
+                continue

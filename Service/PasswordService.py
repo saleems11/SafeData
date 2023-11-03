@@ -6,7 +6,7 @@ class PasswordService:
         pass
 
     @staticmethod
-    def HashifyPassword(password, keySizeInBytes=32):
+    def HashifyPassword(password, keySizeInBytes=32) -> bytes:
         if isinstance(password, bytes):
             #  already hashified
             return password

@@ -41,7 +41,6 @@ class MfaManagerService:
     def IsMfaActive(self):
         return self._mfaManager is not None and self.loginSucceded
 
-    def createMfaKeyPlussValidationMessageInBytes(self):
+    def createMfaKeyPlussValidationMessage(self):
         mfaKeyMessageStr = f'{self._mfaManager.getKeyAndDeleteIt()}{self.MfaDecreptionSuccessCodeMessage}'
-        mfaKeyMessageBytes = bytes(mfaKeyMessageStr, Consts.encoding)
-        return mfaKeyMessageBytes
+        return mfaKeyMessageStr

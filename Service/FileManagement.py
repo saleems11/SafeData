@@ -47,7 +47,7 @@ class FileManagement:
     def DoesPathExist(path, raiseException=False):
         doesExist = os.path.exists(path)
         if raiseException and not doesExist:
-            raise Exception(f'Path does not exist, path:{path}.')
+            raise FileNotFoundError(f'Path does not exist, path:{path}.')
         return doesExist
 
     @staticmethod

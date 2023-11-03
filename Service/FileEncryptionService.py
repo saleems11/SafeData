@@ -1,4 +1,5 @@
 from AppConfig.Consts import Consts
+from Exceptions.DecryptionException import DecryptionException
 from Service.AccessService import AccessService
 from Service.EncryptionService import EncryptionService
 import os
@@ -66,9 +67,12 @@ class FileEncryptionService:
     def decryptFileContent(self, filePath, key, decode = False):
         self._accessService.tryAccessPath(filePath)
 
-        with open(filePath, 'rb') as fo:
-            ciphertext = fo.read()
-            dec = EncryptionService.decrypt(ciphertext, key)
-            if decode:
-                dec = dec.decode(Consts.encoding)
-            return dec
+        try:
+            with open(filePath, 'rb') as fo:
+                ciphertext = fo.read()
+                dec = EncryptionService.decrypt(ciphertext, key)
+                if decode:
+                    dec = dec.decode(Consts.encoding)
+                return dec
+        except Exception as ex:
+            raise DecryptionException(ex, ex)

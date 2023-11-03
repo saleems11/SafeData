@@ -1,6 +1,7 @@
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
 from Exceptions.AuthenticationException import AuthenticationException
+from Exceptions.DecryptionException import DecryptionException
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.PasswordLogInReturnStatus import PasswordLogInReturnStatus
 from Model.Status import Status
@@ -35,7 +36,8 @@ class AuthenticationService:
         mfaLoginResult = self._mfaManagerService.logIn(mfa, mfaKeyDecrebtedKey)
 
         if mfaLoginResult.IsSucceded():
-            self.gpasswordKey = passwordKey
+            hashedMfaKey = PasswordService.HashifyPassword(mfaKeyDecrebtedKey)
+            self.gpasswordKey = hashedMfaKey
 
         mfaKeyDecrebtedKey = None
         password = None
@@ -51,8 +53,9 @@ class AuthenticationService:
                 True
             )
             return PasswordLogInReturnStatus(Status.Succed, f"User password is correct", mfaKeyDecrebtedKey)
-        except UnicodeDecodeError as ex:
-            return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login.", ex)
+        except DecryptionException as ex:
+            if isinstance(ex.innerEx, UnicodeDecodeError):
+                return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login", ex)
 
 
     def getPassowrdKey(self):

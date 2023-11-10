@@ -5,6 +5,7 @@
 import os
 
 from AppConfig.Consts import Consts
+from AppConfig.IConfiguration import IConfiguration
 from Service.FileManagement import FileManagement
 
 
@@ -59,3 +60,26 @@ class Configuration:
                f'Saved Password Dir Path = {self.SavedPasswordDirPath}.\n' \
                f'-------------------------------------------------------'
         print(data)
+
+class ConfigurationV2(IConfiguration):
+
+    def __init__(self):
+        pass
+
+    def GetValueOrDefault(self, configName, defaultVal):
+        pass
+
+    def setUpConsts(self, canEncrypteUnder, savedPasswordDirPath):
+        pass
+
+    def IsConstsAreSetUpSuccesfuly(self):
+        pass
+
+    def IsInDebugMode(self):
+        pass
+
+    def printConfigurations(self):
+        pass
+
+    def __GetConfigData(self):
+        pass

@@ -5,10 +5,11 @@
 import os
 
 from AppConfig.Consts import Consts
+from AppConfig.IConfiguration import IConfiguration
 from Service.FileManagement import FileManagement
 
 
-class Configuration:
+class Configuration(IConfiguration):
 
     def __init__(self):
         self.CanEncrypteUnder = f'Path'
@@ -51,11 +52,3 @@ class Configuration:
     def IsInDebugMode(self):
         boolStr = self.GetValueOrDefault(Consts._DebugMode, "False")
         return bool(boolStr)
-
-
-    def printConfigurations(self):
-        data = f'Parameters:\n' \
-               f'CanEncrypteUnder = {self.CanEncrypteUnder}\n' \
-               f'Saved Password Dir Path = {self.SavedPasswordDirPath}.\n' \
-               f'-------------------------------------------------------'
-        print(data)

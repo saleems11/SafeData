@@ -1,6 +1,6 @@
 import gc
 
-from AppConfig.Configuration import Configuration
+from AppConfig.IConfiguration import IConfiguration
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from Service.FileManagement import FileManagement
 
@@ -9,7 +9,7 @@ class MainPasswordManager:
 
     def __init__(self,
                  fileEncryptionManager:FileEncryptionManager,
-                 configuration:Configuration):
+                 configuration:IConfiguration):
         self._fileEncryptionManager = fileEncryptionManager
         self._defaultDir = configuration.SavedPasswordDirPath
         self.initSavedPasswordDir()

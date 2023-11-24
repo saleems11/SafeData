@@ -1,5 +1,6 @@
-from AppConfig.Configuration import Configuration
+from AppConfig.ConfigurationV2 import ConfigurationV2
 from AppConfig.Consts import Consts
+from AppConfig.IConfiguration import IConfiguration
 from Authentication.AuthenticationService import AuthenticationService
 from Authentication.MfaManagerService import MfaManagerService
 from Authentication.RegistrationService import RegistrationService
@@ -12,7 +13,6 @@ from Model.Status import Status
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from PasswordManager.MainPasswordManager import MainPasswordManager
 from Service.AccessService import AccessService
-from Service.EncryptionService import EncryptionService
 from Service.FileEncryptionService import FileEncryptionService
 from Service.PasswordService import PasswordService
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
@@ -35,7 +35,7 @@ class UserPrompt(cmd.Cmd):
                  registrationService:RegistrationService,
                  mainPasswordManager:MainPasswordManager,
                  fileEncryptionManager:FileEncryptionManager,
-                 configuration:Configuration):
+                 configuration:IConfiguration):
         super().__init__()
         self._userPromptHandler = userPromptHandler
         self._authenticationService = authenticationService
@@ -194,10 +194,10 @@ class UserPrompt(cmd.Cmd):
 
 
 def InitAll():
-    configuration = Configuration()
+    configuration = ConfigurationV2()
     promptUserInputHandler = PromptUserInputHandler()
     mfaManagerService = MfaManagerService()
-    encryptionService = EncryptionService()
+    # encryptionService = EncryptionService()
     passwordService = PasswordService()
 
     accessService = AccessService(configuration)

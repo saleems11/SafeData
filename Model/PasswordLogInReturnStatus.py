@@ -4,6 +4,6 @@ from Model.Status import Status
 
 class PasswordLogInReturnStatus(LogInReturnStatus):
 
-    def __init__(self, status:Status, message, mfaKey):
+    def __init__(self, status:Status, message, mfaKey=None):
         super().__init__(status, message)
         self.MfaKey = mfaKey

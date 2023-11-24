@@ -6,3 +6,4 @@ class Status(Enum):
     ExceptionOccured = 3
     InvalidMfaAuth = 4
     RegistrationFailedToManyAttemps = 5
+    NotYetRegistered = 6

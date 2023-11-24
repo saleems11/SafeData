@@ -16,4 +16,8 @@ class IConfiguration:
         pass
 
     def printConfigurations(self):
-        pass
+        data = f'Parameters:\n' \
+               f'CanEncrypteUnder = {self.CanEncrypteUnder}\n' \
+               f'Saved Password Dir Path = {self.SavedPasswordDirPath}.\n' \
+               f'-------------------------------------------------------'
+        print(data)

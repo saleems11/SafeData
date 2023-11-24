@@ -1,12 +1,12 @@
 import os
 
-from AppConfig.Configuration import Configuration
+from AppConfig.IConfiguration import IConfiguration
 from Exceptions.PathAccessException import PathAccessException
 
 
 class AccessService:
 
-    def __init__(self, configuration: Configuration):
+    def __init__(self, configuration: IConfiguration):
         self._configuration = configuration
 
     def validateCanAccessPath(self, dir_path):

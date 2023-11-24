@@ -1,6 +1,7 @@
 import unittest
 
-from AppConfig.Configuration import ConfigurationV2
+from AppConfig.ConfigurationV2 import ConfigurationV2
+
 
 class ConfigurationV2Test(unittest.TestCase):
     configurationV2Instance = None
@@ -14,8 +15,9 @@ class ConfigurationV2Test(unittest.TestCase):
         cls.configurationV2Instance = None
 
     def test_LoadingTheRightConfig(self):
-        self.assertEqual('', self.configurationV2Instance.CanEncrypteUnder)
-        self.assertEqual('', self.configurationV2Instance.SavedPasswordDirPath)
+        # Test if the value had been updated from the detault
+        self.assertNotEqual(ConfigurationV2.defaultDummyPath, self.configurationV2Instance.CanEncrypteUnder)
+        self.assertNotEqual(ConfigurationV2.defaultDummyPath, self.configurationV2Instance.SavedPasswordDirPath)
 
 if __name__ == '__main__':
     unittest.main()

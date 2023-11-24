@@ -6,6 +6,7 @@ from Model.LogInReturnStatus import LogInReturnStatus
 from Model.PasswordLogInReturnStatus import PasswordLogInReturnStatus
 from Model.Status import Status
 from Service.FileEncryptionService import FileEncryptionService
+from Service.FileManagement import FileManagement
 from Service.PasswordService import PasswordService
 
 
@@ -46,14 +47,21 @@ class AuthenticationService:
 
     def __tryLogin(self, passwordKey) -> PasswordLogInReturnStatus:
         try:
+            isRegistarytionFileExist = FileManagement.DoesPathExist(self._registrationService.registartionFilePath)
+            if not isRegistarytionFileExist:
+                return PasswordLogInReturnStatus(Status.NotYetRegistered, f"Your user doesn't exist")
+
             mfaKeyDecrebtedKey = self._fileEncryptionService.decryptFileContent(
                 self._registrationService.registartionFilePath,
                 passwordKey
             )
+
             return PasswordLogInReturnStatus(Status.Succed, f"User password is correct", mfaKeyDecrebtedKey)
         except DecryptionException as ex:
             if isinstance(ex.innerEx, UnicodeDecodeError):
                 return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login", ex)
+            # in this case the file exists but we had failed to decreypte it
+            return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login, an error occured", ex)
 
 
     def getPassowrdKey(self) -> bytes:

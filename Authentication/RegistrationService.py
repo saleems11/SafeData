@@ -28,19 +28,19 @@ class RegistrationService:
         self.registartionFolderPath = os.path.join(configuration.SavedPasswordDirPath, RegistrationService.UserRegistrationFolderForMfa)
         self.registartionFilePath = os.path.join(self.registartionFolderPath, RegistrationService.registartionFileNameAndType)
 
-    def register(self, password):
+    def register(self, email, password):
         try:
             self.__CreateRegitrationSaveLocationIfNotExist()
 
-            self.SaveRegistrationData(password)
+            self.SaveRegistrationData(email, password)
             return LogInReturnStatus(Status.Succed, 'Registartion Succeded.')
 
         except Exception as ex:
             print(ex)
             return LogInReturnStatus(Status.ExceptionOccured, 'Registartion Failed.')
 
-    def SaveRegistrationData(self, password):
-        mfaKeyWithValidationMessage = self._mfaManagerService.createMfaKeyPlussValidationMessage()
+    def SaveRegistrationData(self, email, password):
+        mfaKeyWithValidationMessage = self._mfaManagerService.createMfaKeyPlussValidationMessage(email)
         key = self._passwordService.HashifyPassword(password)
         self._fileEncryptionService.create_encrypted_file(self.registartionFilePath, mfaKeyWithValidationMessage, key)
 

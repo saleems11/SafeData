@@ -9,3 +9,4 @@ class Consts:
     _DebugMode = 'Debug_Mode'
     Gibberish_Len = 1024
     Gibberish_Template = '{G1}{data}{G2}'
+    EMAIL_PART_IN_MFA_REG = ',email='

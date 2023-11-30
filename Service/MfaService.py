@@ -7,10 +7,7 @@ import io
 
 from AppConfig.Consts import Consts
 
-
 class MfaService:
-    MfaDecreptionSuccessCodeMessage = 'MfaDecreptionSuccessCodeMessage'
-
     def __init__(self, key=None):
         self.key = MfaService.GenerateKey(key)
         self._TOTP = pyotp.TOTP(self.key)
@@ -50,5 +47,20 @@ class MfaService:
         return self._TOTP.verify(Pin, datetime.now(), 1)
 
     @staticmethod
-    def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey):
-        return mfaKeyDecrebtedKey[:-(len(MfaService.MfaDecreptionSuccessCodeMessage))]
+    def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, emailOrUserName) -> str:
+        if not emailOrUserName in mfaKeyDecrebtedKey:
+            return None
+
+        startEmailPartIndex = mfaKeyDecrebtedKey.find(Consts.EMAIL_PART_IN_MFA_REG)
+        savedEmail = mfaKeyDecrebtedKey[-(startEmailPartIndex + len(Consts.EMAIL_PART_IN_MFA_REG)) :]
+
+        isUserName = emailOrUserName.find('@') < 0
+        if isUserName:
+            savedUserName = savedEmail.split()[0]
+            if savedUserName != emailOrUserName:
+                return None
+        elif savedEmail != emailOrUserName:
+            return None
+
+        emailLength = len(mfaKeyDecrebtedKey) - startEmailPartIndex
+        return mfaKeyDecrebtedKey[:-emailLength]

@@ -25,7 +25,7 @@ class AuthenticationService:
     def isAuthnticated(self) -> bool:
         return self._mfaManagerService.IsMfaActive() and self.gpasswordKey is not None
 
-    def login(self, password, mfa) -> LogInReturnStatus:
+    def login(self, emailOrUserName, password, mfa) -> LogInReturnStatus:
         passwordKey = PasswordService.HashifyPassword(password)
         logInReult = self.__tryLogin(passwordKey)
 
@@ -33,7 +33,7 @@ class AuthenticationService:
             return LogInReturnStatus(logInReult.status, logInReult.message)
 
         mfaKeyDecrebtedKey = logInReult.MfaKey
-        mfaLoginResult = self._mfaManagerService.logIn(mfa, mfaKeyDecrebtedKey)
+        mfaLoginResult = self._mfaManagerService.logIn(mfa, emailOrUserName, mfaKeyDecrebtedKey)
 
         if mfaLoginResult.IsSucceded():
             hashedMfaKey = PasswordService.HashifyPassword(mfaKeyDecrebtedKey)

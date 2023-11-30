@@ -96,8 +96,8 @@ class UserPrompt(cmd.Cmd):
         try:
             password = self.__GetPassword()
             mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
-
-            loginResult = self._authenticationService.login(password, mfaKey)
+            emailOrUserName = self._userPromptHandler.getEmailOrUserName()
+            loginResult = self._authenticationService.login(emailOrUserName, password, mfaKey)
             self._userPromptHandler.HandleLoginResult(loginResult)
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex)
@@ -107,6 +107,7 @@ class UserPrompt(cmd.Cmd):
         'Register your account so you can encrypte and decrepte Data'
         try:
             accountName = self._userPromptHandler.getAccountMfaName()
+            email = self._userPromptHandler.getValidEmail()
             self._mfaManagerService.CreateRegistrationQR(accountName)
 
             mfaValidationResult = self.__ValidateMfa()
@@ -115,7 +116,7 @@ class UserPrompt(cmd.Cmd):
                 return
 
             password = self.__GetPassword(True)
-            registrationResult = self._registrationService.register(password)
+            registrationResult = self._registrationService.register(email, password)
             self._userPromptHandler.HandleregistrationResult(registrationResult)
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex)

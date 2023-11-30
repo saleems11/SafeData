@@ -10,6 +10,10 @@ The authentication is required for (Encryption/Decryption)!
 The User Enter his password and Mfa pin, the password is Hashified
 then the Mfa key is decrypted, using the MFA key the MFA pin is validated. 
 
+## Algorithem Used:
+**AES**, based on:  
+https://www.arcserve.com/blog/5-common-encryption-algorithms-and-unbreakables-future
+
 ###### Encryption Process
 Using the hashed mfa key the passwords are encrypted, also Gebbrish data is added.
 
@@ -32,5 +36,9 @@ encrypted value.
 **1. API Support**  
 **2. More Secure Password Saving Method**
 
+
+## To Do:
+1. Allow multi Users
+2. Save More Data
 
 Saleem Saiegh

@@ -23,11 +23,11 @@ class AuthenticationService:
         self.gpasswordKey: bytes = bytearray()
 
     def isAuthnticated(self) -> bool:
-        return self._mfaManagerService.IsMfaActive() and self.gpasswordKey is not None
+        return self._mfaManagerService.IsMfaActive() and self.__isPasswordActive()
 
     def login(self, emailOrUserName, password, mfa) -> LogInReturnStatus:
         passwordKey = PasswordService.HashifyPassword(password)
-        logInReult = self.__tryLogin(passwordKey)
+        logInReult = self.__tryLogin(emailOrUserName, passwordKey)
 
         if not logInReult.IsSucceded():
             return LogInReturnStatus(logInReult.status, logInReult.message)
@@ -44,17 +44,19 @@ class AuthenticationService:
 
         return mfaLoginResult
 
+    def logout(self):
+        self.gpasswordKey = bytearray()
+        self._mfaManagerService.logOut()
 
-    def __tryLogin(self, passwordKey) -> PasswordLogInReturnStatus:
+
+    def __tryLogin(self, emailOrUserName, passwordKey) -> PasswordLogInReturnStatus:
         try:
-            isRegistarytionFileExist = FileManagement.DoesPathExist(self._registrationService.registartionFilePath)
+            registratedUserFilePath = self._registrationService.CreateRegistartionFilePath(emailOrUserName)
+            isRegistarytionFileExist = FileManagement.DoesPathExist(registratedUserFilePath)
             if not isRegistarytionFileExist:
                 return PasswordLogInReturnStatus(Status.NotYetRegistered, f"Your user doesn't exist")
 
-            mfaKeyDecrebtedKey = self._fileEncryptionService.decryptFileContent(
-                self._registrationService.registartionFilePath,
-                passwordKey
-            )
+            mfaKeyDecrebtedKey = self._fileEncryptionService.decryptFileContent(registratedUserFilePath, passwordKey)
 
             return PasswordLogInReturnStatus(Status.Succed, f"User password is correct", mfaKeyDecrebtedKey)
         except DecryptionException as ex:
@@ -63,6 +65,9 @@ class AuthenticationService:
             # in this case the file exists but we had failed to decreypte it
             return PasswordLogInReturnStatus(Status.InvalidPassword, f"User Failed To Login, an error occured", ex)
 
+    def __isPasswordActive(self):
+        isEmpty = not self.gpasswordKey
+        return (not isEmpty)
 
     def getPassowrdKey(self) -> bytes:
         if not self.isAuthnticated():

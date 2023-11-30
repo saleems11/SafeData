@@ -1,5 +1,6 @@
 import unittest
 
+from Authentication.MfaManagerService import MfaManagerService
 from Service.MfaService import MfaService
 
 
@@ -10,7 +11,7 @@ class MfaServiceTest(unittest.TestCase):
         email = 'test@test.com'
         otherEmail = 'otherEmailtest@test.com'
         someKey= 'somekey123_'*3
-        mfaKey = f'{someKey}{email}'
+        mfaKey = MfaManagerService.buildMfaKey(someKey, email)
 
         expected = None
         # Act
@@ -23,7 +24,7 @@ class MfaServiceTest(unittest.TestCase):
         email = 'test@test.com'
         otherUserName = 'otherEmailtest'
         someKey= 'somekey123_'*3
-        mfaKey = f'{someKey}{email}'
+        mfaKey = MfaManagerService.buildMfaKey(someKey, email)
 
         expected = None
         # Act
@@ -36,7 +37,7 @@ class MfaServiceTest(unittest.TestCase):
         email = 'otherEmailtest@test.com'
         otherUserName = 'test'
         someKey= 'somekey123_'*3
-        mfaKey = f'{someKey}{email}'
+        mfaKey = MfaManagerService.buildMfaKey(someKey, email)
 
         expected = None
         # Act
@@ -48,7 +49,7 @@ class MfaServiceTest(unittest.TestCase):
         # Arrange
         email = 'test@test.com'
         someKey= 'somekey123_'*3
-        mfaKey = f'{someKey}{email}'
+        mfaKey = MfaManagerService.buildMfaKey(someKey, email)
 
         expected = someKey
         # Act
@@ -61,7 +62,7 @@ class MfaServiceTest(unittest.TestCase):
         userName = 'testtest'
         email = f'{userName}@test.com'
         someKey= 'somekey123_'*3
-        mfaKey = f'{someKey}{email}'
+        mfaKey = MfaManagerService.buildMfaKey(someKey, email)
 
         expected = someKey
         # Act

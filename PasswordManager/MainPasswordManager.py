@@ -12,10 +12,10 @@ class MainPasswordManager:
                  configuration:IConfiguration):
         self._fileEncryptionManager = fileEncryptionManager
         self._defaultDir = configuration.SavedPasswordDirPath
-        self.initSavedPasswordDir()
 
     def addPassword(self, serviceName, password):
         'Throw exception'
+        self.initSavedPasswordDir()
         fileFullPath = ''
 
         try:
@@ -41,6 +41,7 @@ class MainPasswordManager:
 
     def getPassword(self, serviceName):
         'Throw exception'
+        self.initSavedPasswordDir()
         fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir, FileManagement.Encryption)
         if not FileManagement.DoesPathExist(fileFullPath):
             raise Exception(f'No matching passwrod for this service found :{serviceName}.')

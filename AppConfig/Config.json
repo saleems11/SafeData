@@ -1,5 +1,5 @@
 {
-  "Can_Encrypte_Under" : "",
-  "Saved_Password_Dir_Path" : "",
-  "Debug_Mode" : "False"
+    "Can_Encrypte_Under": "C:\\Users\\iamme\\Documents\\SafeDataEnc",
+    "Saved_Password_Dir_Path": "C:\\Users\\iamme\\Documents\\SafeDataEnc\\MfaRegistration",
+    "Debug_Mode": "False"
 }

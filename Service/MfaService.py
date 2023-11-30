@@ -52,11 +52,11 @@ class MfaService:
             return None
 
         startEmailPartIndex = mfaKeyDecrebtedKey.find(Consts.EMAIL_PART_IN_MFA_REG)
-        savedEmail = mfaKeyDecrebtedKey[-(startEmailPartIndex + len(Consts.EMAIL_PART_IN_MFA_REG)) :]
+        savedEmail = mfaKeyDecrebtedKey[startEmailPartIndex + len(Consts.EMAIL_PART_IN_MFA_REG):]
 
         isUserName = emailOrUserName.find('@') < 0
         if isUserName:
-            savedUserName = savedEmail.split()[0]
+            savedUserName = savedEmail.split('@')[0]
             if savedUserName != emailOrUserName:
                 return None
         elif savedEmail != emailOrUserName:

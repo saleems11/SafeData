@@ -14,7 +14,7 @@ class MfaManagerService:
     def logIn(self, mfa, emailOrUserName, mfaKeyDecrebtedKey) -> LogInReturnStatus:
         mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, emailOrUserName)
         if mfaKey == None:
-            self.handleInvalidLogin()
+            self.handleInvalidLogin(mfa)
 
         self._mfaManager = MfaService(key=mfaKey)
 
@@ -22,11 +22,14 @@ class MfaManagerService:
             self.loginSucceded = True
             return LogInReturnStatus(Status.Succed, "User Succeded to LogIn")
 
-        return self.handleInvalidLogin()
+        return self.handleInvalidLogin(mfa)
 
-    def handleInvalidLogin(self):
+    def logOut(self):
         self.loginSucceded = False
         self._mfaManager = None
+
+    def handleInvalidLogin(self, mfa):
+        self.logOut()
         return LogInReturnStatus(Status.InvalidMfaAuth, f"Failed to Authnticate with 2FA, you'r input was {mfa}.")
 
     def validate(self, mfaToValidate) -> LogInReturnStatus:
@@ -44,5 +47,9 @@ class MfaManagerService:
         return self._mfaManager is not None and self.loginSucceded
 
     def createMfaKeyPlussValidationMessage(self, email):
-        mfaKeyMessageStr = f'{self._mfaManager.getKeyAndDeleteIt()}{Consts.EMAIL_PART_IN_MFA_REG}{email}'
+        mfaKeyMessageStr = self.buildMfaKey(self._mfaManager.getKeyAndDeleteIt(), email)
         return mfaKeyMessageStr
+
+    @staticmethod
+    def buildMfaKey(key, email):
+        return f'{key}{Consts.EMAIL_PART_IN_MFA_REG}{email}'

@@ -22,6 +22,15 @@ class ConfigurationV2(IConfiguration):
         return self.DataDict.get(configName, defaultVal)
 
     def setUpConsts(self, canEncrypteUnder, savedPasswordDirPath):
+        self.DataDict[Consts._Can_Encrypte_Under] = canEncrypteUnder
+        self.DataDict[Consts._Saved_Password_Dir_Path] = savedPasswordDirPath
+
+        ConfigFilePath = self.__GetConfigFilePath()
+
+        import json
+        with open(ConfigFilePath, 'w', encoding='utf-8') as f:
+            json.dump(self.DataDict, f, ensure_ascii=False, indent=4)
+
         self.__GetConfigData()
 
     def IsConstsAreSetUpSuccesfuly(self):
@@ -32,8 +41,7 @@ class ConfigurationV2(IConfiguration):
         return bool(boolStr)
 
     def __GetConfigData(self) -> {}:
-        ConfigRelaticFilePath = os.path.join('./', Consts.Confgi_File_Name)
-        ConfigFilePath = Path(__file__).parent / ConfigRelaticFilePath
+        ConfigFilePath = self.__GetConfigFilePath()
 
         with open(ConfigFilePath) as f:
             valuesDict = json.load(f)
@@ -43,3 +51,8 @@ class ConfigurationV2(IConfiguration):
         self.CanEncrypteUnder = dataDict[Consts._Can_Encrypte_Under]
         self.SavedPasswordDirPath = dataDict[Consts._Saved_Password_Dir_Path]
         self.DataDict = dataDict
+
+    def __GetConfigFilePath(self):
+        ConfigRelaticFilePath = os.path.join('./', Consts.Confgi_File_Name)
+        ConfigFilePath = Path(__file__).parent / ConfigRelaticFilePath
+        return ConfigFilePath

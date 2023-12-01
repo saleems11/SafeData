@@ -6,6 +6,8 @@ from AppConfig.Consts import Consts
 from AppConfig.IConfiguration import IConfiguration
 
 # Json File Based Implementation
+from Service.FileManagement import FileManagement
+
 
 class ConfigurationV2(IConfiguration):
     defaultDummyPath = 'Path'
@@ -26,10 +28,7 @@ class ConfigurationV2(IConfiguration):
         self.DataDict[Consts._Saved_Password_Dir_Path] = savedPasswordDirPath
 
         ConfigFilePath = self.__GetConfigFilePath()
-
-        import json
-        with open(ConfigFilePath, 'w', encoding='utf-8') as f:
-            json.dump(self.DataDict, f, ensure_ascii=False, indent=4)
+        FileManagement.WriteJsonObject(ConfigFilePath, self.DataDict)
 
         self.__GetConfigData()
 

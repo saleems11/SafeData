@@ -7,6 +7,8 @@ from Exceptions.InvalidFileTypeException import InvalidFileTypeException
 class FileManagement:
     Txt = 'txt'
     Encryption = 'enc'
+    DefaultEncoding = 'utf-8'
+    DefaultJsonIndedent = 4
 
     @staticmethod
     def CreateDir(dirPath):
@@ -29,9 +31,18 @@ class FileManagement:
 
 
     @staticmethod
+    def WriteJsonObject(filePath, data, newFile=True):
+        FileManagement.__CheckFileCreation(filePath, newFile)
+        fileOperation = 'w' if not newFile else 'a'
+
+        import json
+        with open(filePath, fileOperation, encoding=FileManagement.DefaultEncoding) as f:
+            json.dump(data, f, ensure_ascii=False, indent=FileManagement.DefaultJsonIndedent)
+
+
+    @staticmethod
     def WriteInFile(filePath, data, inBytes=False,newFile=True):
-        if newFile and FileManagement.DoesPathExist(filePath):
-            raise FileExistsError(f'File already exist in this Path:{filePath}.')
+        FileManagement.__CheckFileCreation(filePath, newFile)
 
         if not newFile:
             FileManagement.AppendToFile(filePath, data)
@@ -39,6 +50,11 @@ class FileManagement:
         writeMode = 'wb' if inBytes else 'w'
         with open(filePath, writeMode) as file:
             file.write(data)
+
+    @staticmethod
+    def __CheckFileCreation(filePath:str, newFile:bool):
+        if newFile and FileManagement.DoesPathExist(filePath):
+            raise FileExistsError(f'File already exist in this Path:{filePath}.')
 
     @staticmethod
     def createFilePath(fileName, dirPath, fileType=Txt):

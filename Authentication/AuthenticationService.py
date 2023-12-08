@@ -25,15 +25,15 @@ class AuthenticationService:
     def isAuthnticated(self) -> bool:
         return self._mfaManagerService.IsMfaActive() and self.__isPasswordActive()
 
-    def login(self, emailOrUserName, password, mfa) -> LogInReturnStatus:
+    def login(self, email, password, mfa) -> LogInReturnStatus:
         passwordKey = PasswordService.HashifyPassword(password)
-        logInReult = self.__tryLogin(emailOrUserName, passwordKey)
+        logInReult = self.__tryLogin(email, passwordKey)
 
         if not logInReult.IsSucceded():
             return LogInReturnStatus(logInReult.status, logInReult.message)
 
         mfaKeyDecrebtedKey = logInReult.MfaKey
-        mfaLoginResult = self._mfaManagerService.logIn(mfa, emailOrUserName, mfaKeyDecrebtedKey)
+        mfaLoginResult = self._mfaManagerService.logIn(mfa, email, mfaKeyDecrebtedKey)
 
         if mfaLoginResult.IsSucceded():
             hashedMfaKey = PasswordService.HashifyPassword(mfaKeyDecrebtedKey)
@@ -49,9 +49,9 @@ class AuthenticationService:
         self._mfaManagerService.logOut()
 
 
-    def __tryLogin(self, emailOrUserName, passwordKey) -> PasswordLogInReturnStatus:
+    def __tryLogin(self, email, passwordKey) -> PasswordLogInReturnStatus:
         try:
-            registratedUserFilePath = self._registrationService.CreateRegistartionFilePath(emailOrUserName)
+            registratedUserFilePath = self._registrationService.GetRegistartionFilePath(email)
             isRegistarytionFileExist = FileManagement.DoesPathExist(registratedUserFilePath)
             if not isRegistarytionFileExist:
                 return PasswordLogInReturnStatus(Status.NotYetRegistered, f"Your user doesn't exist")

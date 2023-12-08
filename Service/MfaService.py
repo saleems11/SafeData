@@ -6,6 +6,8 @@ from PIL import Image
 import io
 
 from AppConfig.Consts import Consts
+from Authentication.Model.SavedMfaKeyModel import SavedMfaKeyModel
+
 
 class MfaService:
     def __init__(self, key=None):
@@ -47,20 +49,24 @@ class MfaService:
         return self._TOTP.verify(Pin, datetime.now(), 1)
 
     @staticmethod
-    def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, emailOrUserName) -> str:
-        if not emailOrUserName in mfaKeyDecrebtedKey:
+    def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, email) -> str:
+        """ Part of this function feature is to allow only user name, but as the data is not yet saved in db, it will
+        be hard to access a file based on a username, as it will require searching in the entire folder."""
+        if not email in mfaKeyDecrebtedKey:
             return None
 
-        startEmailPartIndex = mfaKeyDecrebtedKey.find(Consts.EMAIL_PART_IN_MFA_REG)
-        savedEmail = mfaKeyDecrebtedKey[startEmailPartIndex + len(Consts.EMAIL_PART_IN_MFA_REG):]
+        savedMfaKeyModel = SavedMfaKeyModel.deserilizeJson(mfaKeyDecrebtedKey)
+        savedEmail = savedMfaKeyModel.email
 
-        isUserName = emailOrUserName.find('@') < 0
-        if isUserName:
-            savedUserName = savedEmail.split('@')[0]
-            if savedUserName != emailOrUserName:
-                return None
-        elif savedEmail != emailOrUserName:
+        # isUserName = email.find('@') < 0
+        # if isUserName:
+        #     savedUserName = savedEmail.split('@')[0]
+        #     if savedUserName != email:
+        #         return None
+        # elif savedEmail != email:
+        #     return None
+
+        if savedEmail != email:
             return None
 
-        emailLength = len(mfaKeyDecrebtedKey) - startEmailPartIndex
-        return mfaKeyDecrebtedKey[:-emailLength]
+        return savedMfaKeyModel.key

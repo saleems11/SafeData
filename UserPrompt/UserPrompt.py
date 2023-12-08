@@ -95,10 +95,10 @@ class UserPrompt(cmd.Cmd):
         'Login to your account, requires password and Mfa(your should be already registered).'
         # Add later locking mechanisem
         try:
-            emailOrUserName = self._userPromptHandler.getEmailOrUserName()
+            email = self._userPromptHandler.getValidEmail()
             password = self.__GetPassword()
             mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
-            loginResult = self._authenticationService.login(emailOrUserName, password, mfaKey)
+            loginResult = self._authenticationService.login(email, password, mfaKey)
             self._userPromptHandler.HandleLoginResult(loginResult)
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex)

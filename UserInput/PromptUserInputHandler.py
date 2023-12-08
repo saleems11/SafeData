@@ -68,9 +68,9 @@ class PromptUserInputHandler(BasePromptUserInputHandler):
 
         return validEmail
 
-    def getEmailOrUserName(self) -> str:
-        EmailOrUserName = self.getUserInput('Please Enter your Email/User Name:')
-        return EmailOrUserName
+    # def getEmail(self) -> str:
+    #     email = self.getUserInput('Please Enter your Email:')
+    #     return email
 
 
     def getWebSiteServiceName(self) -> str:

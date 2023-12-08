@@ -15,7 +15,7 @@ class MfaServiceTest(unittest.TestCase):
 
         expected = None
         # Act
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, emailOrUserName=otherEmail)
+        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=otherEmail)
         # Assert
         self.assertEqual(expected, mfaKey)
 
@@ -28,7 +28,7 @@ class MfaServiceTest(unittest.TestCase):
 
         expected = None
         # Act
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, emailOrUserName=otherUserName)
+        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=otherUserName)
         # Assert
         self.assertEqual(expected, mfaKey)
 
@@ -41,7 +41,7 @@ class MfaServiceTest(unittest.TestCase):
 
         expected = None
         # Act
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, emailOrUserName=otherUserName)
+        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=otherUserName)
         # Assert
         self.assertEqual(expected, mfaKey)
 
@@ -53,7 +53,7 @@ class MfaServiceTest(unittest.TestCase):
 
         expected = someKey
         # Act
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, emailOrUserName=email)
+        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=email)
         # Assert
         self.assertEqual(expected, mfaKey)
 
@@ -66,7 +66,7 @@ class MfaServiceTest(unittest.TestCase):
 
         expected = someKey
         # Act
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, emailOrUserName=userName)
+        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=userName)
         # Assert
         self.assertEqual(expected, mfaKey)
 

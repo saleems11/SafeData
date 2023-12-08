@@ -39,7 +39,7 @@ class RegistrationService:
     def SaveRegistrationData(self, email, password):
         mfaKeyWithValidationMessage = self._mfaManagerService.createMfaKeyPlussValidationMessage(email)
         key = self._passwordService.HashifyPassword(password)
-        regFilePath = self.CreateRegistartionFilePath(email)
+        regFilePath = self.GetRegistartionFilePath(email)
         self._fileEncryptionService.create_encrypted_file(regFilePath, mfaKeyWithValidationMessage, key)
 
 
@@ -47,7 +47,7 @@ class RegistrationService:
         FileManagement.CreateDir(self.registartionFolderPath)
 
 
-    def CreateRegistartionFilePath(self, email):
+    def GetRegistartionFilePath(self, email):
         fileName = f'{RegistrationService.UserRegistrationFileNameForMfa}_{email}.{FileManagement.Encryption}'
         return os.path.join(self.registartionFolderPath, fileName)
 

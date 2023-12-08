@@ -1,4 +1,5 @@
 from AppConfig.Consts import Consts
+from Authentication.Model.SavedMfaKeyModel import SavedMfaKeyModel
 from Model.LogInReturnStatus import LogInReturnStatus
 from Model.Status import Status
 from Service.MfaService import MfaService
@@ -11,8 +12,8 @@ class MfaManagerService:
         self._mfaManager = None
         self.loginSucceded = False
 
-    def logIn(self, mfa, emailOrUserName, mfaKeyDecrebtedKey) -> LogInReturnStatus:
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, emailOrUserName)
+    def logIn(self, mfa, email, mfaKeyDecrebtedKey) -> LogInReturnStatus:
+        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, email)
         if mfaKey == None:
             self.handleInvalidLogin(mfa)
 
@@ -52,4 +53,4 @@ class MfaManagerService:
 
     @staticmethod
     def buildMfaKey(key, email):
-        return f'{key}{Consts.EMAIL_PART_IN_MFA_REG}{email}'
+        return SavedMfaKeyModel(key, email).serializeJson()

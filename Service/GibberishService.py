@@ -3,7 +3,7 @@ import secrets
 
 from AppConfig.Consts import Consts
 
-
+# The same as adding Salt
 class GibberishService:
 
     @staticmethod

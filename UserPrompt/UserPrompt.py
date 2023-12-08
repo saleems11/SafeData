@@ -48,12 +48,13 @@ class UserPrompt(cmd.Cmd):
         self.__setUpEnv(False, True)
 
 
-    def __GetPassword(self, encrypt=False):
+    def __GetPassword(self):
         if self._authenticationService.isAuthnticated():
             return self._authenticationService.getPassowrdKey()
-        if encrypt:
-            return self._userPromptHandler.getValidPassword()
         return self._userPromptHandler.getInputPassword()
+
+    def __GetRegistrationPassword(self):
+        return self._userPromptHandler.getValidPassword()
 
     def __ValidateMfa(self):
         mfaValidationResult = None
@@ -94,11 +95,20 @@ class UserPrompt(cmd.Cmd):
         'Login to your account, requires password and Mfa(your should be already registered).'
         # Add later locking mechanisem
         try:
+            email = self._userPromptHandler.getValidEmail()
             password = self.__GetPassword()
             mfaKey = self._userPromptHandler.getValidMfaInputLogIn()
-
-            loginResult = self._authenticationService.login(password, mfaKey)
+            loginResult = self._authenticationService.login(email, password, mfaKey)
             self._userPromptHandler.HandleLoginResult(loginResult)
+        except Exception as ex:
+            handeled = self.__handleMainExcptions(ex)
+            if not handeled: raise
+
+    def do_logout(self, arg):
+        'Logout from your account.'
+        try:
+            loginResult = self._authenticationService.logout()
+            print('Logout Succeded.')
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex)
             if not handeled: raise
@@ -107,6 +117,7 @@ class UserPrompt(cmd.Cmd):
         'Register your account so you can encrypte and decrepte Data'
         try:
             accountName = self._userPromptHandler.getAccountMfaName()
+            email = self._userPromptHandler.getValidEmail()
             self._mfaManagerService.CreateRegistrationQR(accountName)
 
             mfaValidationResult = self.__ValidateMfa()
@@ -114,8 +125,8 @@ class UserPrompt(cmd.Cmd):
             if not mfaValidationResult.IsSucceded():
                 return
 
-            password = self.__GetPassword(True)
-            registrationResult = self._registrationService.register(password)
+            password = self.__GetRegistrationPassword()
+            registrationResult = self._registrationService.register(email, password)
             self._userPromptHandler.HandleregistrationResult(registrationResult)
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex)

@@ -14,8 +14,6 @@ class RegistrationService:
     UserRegistrationFileNameForMfa = 'secureMfa'
     UserRegistrationFolderForMfa = 'MfaRegistration'
 
-    registartionFileNameAndType = f'{UserRegistrationFileNameForMfa}.{FileManagement.Encryption}'
-
     def __init__(self,
                  passwordService:PasswordService,
                  fileEncryptionService:FileEncryptionService,
@@ -26,24 +24,35 @@ class RegistrationService:
         self._mfaManagerService = mfaManagerService
 
         self.registartionFolderPath = os.path.join(configuration.SavedPasswordDirPath, RegistrationService.UserRegistrationFolderForMfa)
-        self.registartionFilePath = os.path.join(self.registartionFolderPath, RegistrationService.registartionFileNameAndType)
 
-    def register(self, password):
+    def register(self, email, password):
         try:
             self.__CreateRegitrationSaveLocationIfNotExist()
 
-            self.SaveRegistrationData(password)
+            self.SaveRegistrationData(email, password)
             return LogInReturnStatus(Status.Succed, 'Registartion Succeded.')
 
         except Exception as ex:
             print(ex)
             return LogInReturnStatus(Status.ExceptionOccured, 'Registartion Failed.')
 
-    def SaveRegistrationData(self, password):
-        mfaKeyWithValidationMessage = self._mfaManagerService.createMfaKeyPlussValidationMessage()
+    def SaveRegistrationData(self, email, password):
+        mfaKeyWithValidationMessage = self._mfaManagerService.createMfaKeyPlussValidationMessage(email)
         key = self._passwordService.HashifyPassword(password)
-        self._fileEncryptionService.create_encrypted_file(self.registartionFilePath, mfaKeyWithValidationMessage, key)
+        regFilePath = self.GetRegistartionFilePath(email)
+        self._fileEncryptionService.create_encrypted_file(regFilePath, mfaKeyWithValidationMessage, key)
 
 
     def __CreateRegitrationSaveLocationIfNotExist(self):
         FileManagement.CreateDir(self.registartionFolderPath)
+
+
+    def GetRegistartionFilePath(self, email):
+        fileName = f'{RegistrationService.UserRegistrationFileNameForMfa}_{email}.{FileManagement.Encryption}'
+        return os.path.join(self.registartionFolderPath, fileName)
+
+    @staticmethod
+    def GetUserEmailFromFileName(fileName):
+        emailAndFileType = fileName.split('_')[1]
+        email = emailAndFileType.split('.')[0]
+        return email

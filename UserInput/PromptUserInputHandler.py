@@ -1,6 +1,7 @@
 from Model.LogInReturnStatus import LogInReturnStatus
 from Service.FileManagement import FileManagement
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
+import re
 
 
 class PromptUserInputHandler(BasePromptUserInputHandler):
@@ -57,6 +58,20 @@ class PromptUserInputHandler(BasePromptUserInputHandler):
                 print("Invalid Account Name, Please try Again:")
             accountName = self.getUserInput('Please Enter Account Name:')
         return accountName
+
+    def getValidEmail(self) -> str:
+        email_format: str = r"(^[a-zA-Z0-9'_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        validEmail = self.getUserInput('Please Enter your Email:')
+
+        while not re.match(email_format, validEmail, re.IGNORECASE):
+            validEmail = self.getUserInput('Invalid EmailAddress, Please Enter your Email again:')
+
+        return validEmail
+
+    # def getEmail(self) -> str:
+    #     email = self.getUserInput('Please Enter your Email:')
+    #     return email
+
 
     def getWebSiteServiceName(self) -> str:
         WebSiteServiceName = self.getUserInput('Please Enter Website/Service Name:')

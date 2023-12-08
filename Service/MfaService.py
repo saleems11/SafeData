@@ -6,11 +6,10 @@ from PIL import Image
 import io
 
 from AppConfig.Consts import Consts
+from Authentication.Model.SavedMfaKeyModel import SavedMfaKeyModel
 
 
 class MfaService:
-    MfaDecreptionSuccessCodeMessage = 'MfaDecreptionSuccessCodeMessage'
-
     def __init__(self, key=None):
         self.key = MfaService.GenerateKey(key)
         self._TOTP = pyotp.TOTP(self.key)
@@ -50,5 +49,24 @@ class MfaService:
         return self._TOTP.verify(Pin, datetime.now(), 1)
 
     @staticmethod
-    def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey):
-        return mfaKeyDecrebtedKey[:-(len(MfaService.MfaDecreptionSuccessCodeMessage))]
+    def getMfaKeyFromMfaKeyDecrebtedKey(mfaKeyDecrebtedKey, email) -> str:
+        """ Part of this function feature is to allow only user name, but as the data is not yet saved in db, it will
+        be hard to access a file based on a username, as it will require searching in the entire folder."""
+        if not email in mfaKeyDecrebtedKey:
+            return None
+
+        savedMfaKeyModel = SavedMfaKeyModel.deserilizeJson(mfaKeyDecrebtedKey)
+        savedEmail = savedMfaKeyModel.email
+
+        # isUserName = email.find('@') < 0
+        # if isUserName:
+        #     savedUserName = savedEmail.split('@')[0]
+        #     if savedUserName != email:
+        #         return None
+        # elif savedEmail != email:
+        #     return None
+
+        if savedEmail != email:
+            return None
+
+        return savedMfaKeyModel.key

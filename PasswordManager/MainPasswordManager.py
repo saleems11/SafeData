@@ -1,6 +1,7 @@
 import gc
 
 from AppConfig.IConfiguration import IConfiguration
+from Model.SavedPasswordData import SavedPasswordData
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from Service.FileManagement import FileManagement
 
@@ -13,14 +14,17 @@ class MainPasswordManager:
         self._fileEncryptionManager = fileEncryptionManager
         self._defaultDir = configuration.SavedPasswordDirPath
 
-    def addPassword(self, serviceName, password):
+    def addPassword(self, dataToSave:SavedPasswordData):
         'Throw exception'
         self.initSavedPasswordDir()
         fileFullPath = ''
 
         try:
-            fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir)
-            FileManagement.WriteInFile(fileFullPath, password)
+            fileFullPath = FileManagement.createFilePath(
+                dataToSave.getUniqueId(),
+                self._defaultDir
+            )
+            FileManagement.WriteInFile(fileFullPath, dataToSave.serializeJson())
         except FileExistsError as ex:
             raise
         except Exception:
@@ -39,12 +43,13 @@ class MainPasswordManager:
         key = None
         collected = gc.collect()
 
-    def getPassword(self, serviceName):
+    def getPassword(self, dataToSave:SavedPasswordData):
         'Throw exception'
         self.initSavedPasswordDir()
-        fileFullPath = FileManagement.createFilePath(serviceName, self._defaultDir, FileManagement.Encryption)
+        # need to add the email to the path
+        fileFullPath = FileManagement.createFilePath(dataToSave.getUniqueId(), self._defaultDir, FileManagement.Encryption)
         if not FileManagement.DoesPathExist(fileFullPath):
-            raise Exception(f'No matching passwrod for this service found :{serviceName}.')
+            raise Exception(f'No matching passwrod for this service found :{dataToSave.serviceName}.')
 
         decPassword = self._fileEncryptionManager.read_encrypted_file(fileFullPath)
 

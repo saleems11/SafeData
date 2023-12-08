@@ -9,6 +9,7 @@ from Exceptions.DecryptionException import DecryptionException
 from Exceptions.InvalidFileTypeException import InvalidFileTypeException
 from Exceptions.PathAccessException import PathAccessException
 from Model.LogInReturnStatus import LogInReturnStatus
+from Model.SavedPasswordData import SavedPasswordData
 from Model.Status import Status
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from PasswordManager.MainPasswordManager import MainPasswordManager
@@ -138,7 +139,12 @@ class UserPrompt(cmd.Cmd):
             accountName = self._userPromptHandler.getWebSiteServiceName()
             password = self._userPromptHandler.getInputPassword()
 
-            self._mainPasswordManager.addPassword(accountName, password)
+            dataToSave = SavedPasswordData(
+                accountName,
+                password,
+                self._authenticationService.userEmail)
+
+            self._mainPasswordManager.addPassword(dataToSave)
             # Clean-up
             password = None
         except Exception as ex:

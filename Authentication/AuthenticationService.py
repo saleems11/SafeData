@@ -21,6 +21,7 @@ class AuthenticationService:
         self._fileEncryptionService = fileEncryptionService
         self.mfaManager = None
         self.gpasswordKey: bytes = bytearray()
+        self.userEmail = None
 
     def isAuthnticated(self) -> bool:
         return self._mfaManagerService.IsMfaActive() and self.__isPasswordActive()
@@ -38,6 +39,7 @@ class AuthenticationService:
         if mfaLoginResult.IsSucceded():
             hashedMfaKey = PasswordService.HashifyPassword(mfaKeyDecrebtedKey)
             self.__setPassword(hashedMfaKey)
+            self.__setEmai(email)
 
         mfaKeyDecrebtedKey = None
         password = None
@@ -45,6 +47,7 @@ class AuthenticationService:
         return mfaLoginResult
 
     def logout(self):
+        self.userEmail = None
         self.gpasswordKey = bytearray()
         self._mfaManagerService.logOut()
 
@@ -76,3 +79,6 @@ class AuthenticationService:
 
     def __setPassword(self, password:bytes):
         self.gpasswordKey = password
+
+    def __setEmai(self, email:str):
+        self.userEmail = email

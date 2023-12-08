@@ -57,18 +57,19 @@ class MfaServiceTest(unittest.TestCase):
         # Assert
         self.assertEqual(expected, mfaKey)
 
-    def test_getMfaKeyFromMfaKeyDecrebtedKey_UsedUserNameThatExist_returnsKey(self):
-        # Arrange
-        userName = 'testtest'
-        email = f'{userName}@test.com'
-        someKey= 'somekey123_'*3
-        mfaKey = MfaManagerService.buildMfaKey(someKey, email)
-
-        expected = someKey
-        # Act
-        mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=userName)
-        # Assert
-        self.assertEqual(expected, mfaKey)
+    # This test is decativated as the login via username is disabled for now.
+    # def test_getMfaKeyFromMfaKeyDecrebtedKey_UsedUserNameThatExist_returnsKey(self):
+    #     # Arrange
+    #     userName = 'testtest'
+    #     email = f'{userName}@test.com'
+    #     someKey= 'somekey123_'*3
+    #     mfaKey = MfaManagerService.buildMfaKey(someKey, email)
+    #
+    #     expected = someKey
+    #     # Act
+    #     mfaKey = MfaService.getMfaKeyFromMfaKeyDecrebtedKey(mfaKey, email=userName)
+    #     # Assert
+    #     self.assertEqual(expected, mfaKey)
 
 if __name__ == '__main__':
     unittest.main()

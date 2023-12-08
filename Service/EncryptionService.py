@@ -6,7 +6,8 @@ from Service.GibberishService import GibberishService
 
 
 class EncryptionService:
-
+    # AES modes:
+    # https://onboardbase.com/blog/aes-encryption-decryption/
     def __init__(self):
         pass
 
@@ -27,6 +28,8 @@ class EncryptionService:
         # encryption based on the Key size
         # add Gibberish Part
         # will not be used, but it is here in case needed
+        # code based on(not by the best practices, it was intended to be used for testing):
+        # https://asecuritysite.com/encryption/aes_gcm#:~:text=AES%20GCM%20(Galois%20Counter%20Mode,it%20does%20not%20require%20padding.
         gibberishData = GibberishService.addGibberishToData(message)
         gibberishDataInBytes = bytes(gibberishData, Consts.encoding)
 

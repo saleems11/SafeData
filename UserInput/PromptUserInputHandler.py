@@ -2,6 +2,7 @@ from Model.LogInReturnStatus import LogInReturnStatus
 from Service.FileManagement import FileManagement
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
 import re
+import validators
 
 
 class PromptUserInputHandler(BasePromptUserInputHandler):
@@ -73,9 +74,32 @@ class PromptUserInputHandler(BasePromptUserInputHandler):
     #     return email
 
 
-    def getWebSiteServiceName(self) -> str:
-        WebSiteServiceName = self.getUserInput('Please Enter Website/Service Name:')
-        return WebSiteServiceName
+    def getServiceName(self) -> str:
+        serviceName = self.getUserInput('Please Enter Service Name:')
+        return serviceName
+
+    def getValidWebsiteUrl(self) -> str:
+        while True:
+            websiteUrl = self.getUserInput('Please Enter website url (To skip press enter):')
+            if websiteUrl == '\n':
+                return None
+            if validators.url(websiteUrl):
+                break
+        return websiteUrl
+
+    def getAddetionalInfo(self) -> {}:
+        keyValuesMetaData = {}
+        while True:
+            key = self.getUserInput('Please Enter name to store a value (To finish press enter):')
+            if key == '\n':
+                return keyValuesMetaData
+            if key in keyValuesMetaData:
+                print("name already exists.")
+                continue
+
+            value = self.getUserInput('Please Enter the name value:')
+            keyValuesMetaData[key] = value
+        return keyValuesMetaData
 
     def getFilePath(self, toMsg='') -> str:
         to = '' if len(toMsg) == 0 else f' to {toMsg}'

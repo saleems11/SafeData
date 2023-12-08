@@ -9,12 +9,14 @@ from Exceptions.DecryptionException import DecryptionException
 from Exceptions.InvalidFileTypeException import InvalidFileTypeException
 from Exceptions.PathAccessException import PathAccessException
 from Model.LogInReturnStatus import LogInReturnStatus
+from Model.SavedPasswordData import SavedPasswordData
 from Model.Status import Status
 from PasswordManager.FileEncryptionManager import FileEncryptionManager
 from PasswordManager.MainPasswordManager import MainPasswordManager
 from Service.AccessService import AccessService
 from Service.FileEncryptionService import FileEncryptionService
 from Service.PasswordService import PasswordService
+from Service.UserMetaDataService import UserMetaDataService
 from UserInput.BasePromptUserInputHandler import BasePromptUserInputHandler
 from UserInput.PromptUserInputHandler import PromptUserInputHandler
 
@@ -35,7 +37,8 @@ class UserPrompt(cmd.Cmd):
                  registrationService:RegistrationService,
                  mainPasswordManager:MainPasswordManager,
                  fileEncryptionManager:FileEncryptionManager,
-                 configuration:IConfiguration):
+                 configuration:IConfiguration,
+                 userMetaDataService:UserMetaDataService):
         super().__init__()
         self._userPromptHandler = userPromptHandler
         self._authenticationService = authenticationService
@@ -44,6 +47,7 @@ class UserPrompt(cmd.Cmd):
         self._mainPasswordManager = mainPasswordManager
         self._fileEncryptionManager = fileEncryptionManager
         self._configuration = configuration
+        self._userMetaDataService = userMetaDataService
 
         self.__setUpEnv(False, True)
 
@@ -135,10 +139,21 @@ class UserPrompt(cmd.Cmd):
     def do_addPassword(self, arg):
         'Add New Password, it will be saved in a file where you had set the SavedPasswordDirPath'
         try:
-            accountName = self._userPromptHandler.getWebSiteServiceName()
+            accountName = self._userPromptHandler.getServiceName()
             password = self._userPromptHandler.getInputPassword()
+            websiteUrl = self._userPromptHandler.getValidWebsiteUrl()
+            metaData = self._userPromptHandler.getAddetionalInfo()
 
-            self._mainPasswordManager.addPassword(accountName, password)
+            dataToSave = SavedPasswordData(
+                accountName,
+                password,
+                self._authenticationService.userEmail,
+                websiteUrl,
+                metaData,
+            )
+
+            self._mainPasswordManager.addPassword(dataToSave)
+            self._userMetaDataService.ReadUserMetaData()
             # Clean-up
             password = None
         except Exception as ex:
@@ -148,10 +163,15 @@ class UserPrompt(cmd.Cmd):
     def do_getPassword(self, arg):
         'Get Saved Password'
         try:
-            accountName = self._userPromptHandler.getWebSiteServiceName()
+            serviceName = self._userPromptHandler.getServiceName()
+            dataFetchRequest = SavedPasswordData(
+                serviceName,
+                None,
+                self._authenticationService.userEmail,
+            )
 
-            savedPass = self._mainPasswordManager.getPassword(accountName)
-            print(f'Password of {accountName} = {savedPass}.')
+            savedData = self._mainPasswordManager.getPassword(dataFetchRequest)
+            print(f'Password of {savedData}.')
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex, "while trying to get password.")
             if not handeled: raise
@@ -219,6 +239,8 @@ def InitAll():
     authenticationService = AuthenticationService(mfaManagerService, registrationService, fileEncryptionService)
     fileEncryptionManager = FileEncryptionManager(authenticationService, fileEncryptionService)
     mainPasswordManager = MainPasswordManager(fileEncryptionManager, configuration)
+    userMetaDataService = UserMetaDataService(fileEncryptionManager, configuration)
+
 
     userPrompt = UserPrompt(
         promptUserInputHandler,
@@ -227,7 +249,8 @@ def InitAll():
         registrationService,
         mainPasswordManager,
         fileEncryptionManager,
-        configuration
+        configuration,
+        userMetaDataService
     )
 
     userPrompt.cmdloop()

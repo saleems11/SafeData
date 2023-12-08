@@ -41,15 +41,23 @@ class FileManagement:
 
 
     @staticmethod
-    def WriteInFile(filePath, data, inBytes=False,newFile=True):
+    def WriteInFile(filePath, data, inBytes=False, newFile=True, overiteFile=False):
         FileManagement.__CheckFileCreation(filePath, newFile)
 
-        if not newFile:
+        if not newFile and not overiteFile:
             FileManagement.AppendToFile(filePath, data)
 
         writeMode = 'wb' if inBytes else 'w'
         with open(filePath, writeMode) as file:
             file.write(data)
+
+    @staticmethod
+    def WriteInFileWithErrorHandling(filePath, data, inBytes=False, newFile=True, overiteFile=False):
+        try:
+            FileManagement.WriteInFile(filePath, data, inBytes, newFile, overiteFile)
+        except FileExistsError as ex:
+            os.remove(filePath)
+            raise ex
 
     @staticmethod
     def __CheckFileCreation(filePath:str, newFile:bool):

@@ -39,11 +39,7 @@ class FileEncryptionService:
         dec = self.decryptFileContent(filePath, key)
         decFilePath = FileManagement.ChangeFileType(filePath, FileManagement.Txt)
 
-        try:
-            FileManagement.WriteInFile(decFilePath, dec)
-        except FileExistsError as ex:
-            os.remove(decFilePath)
-            raise ex
+        FileManagement.WriteInFileWithErrorHandling(decFilePath, dec)
 
         if delete:
             os.remove(filePath)

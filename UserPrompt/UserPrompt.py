@@ -142,7 +142,8 @@ class UserPrompt(cmd.Cmd):
             dataToSave = SavedPasswordData(
                 accountName,
                 password,
-                self._authenticationService.userEmail)
+                self._authenticationService.userEmail,
+            )
 
             self._mainPasswordManager.addPassword(dataToSave)
             # Clean-up
@@ -154,10 +155,15 @@ class UserPrompt(cmd.Cmd):
     def do_getPassword(self, arg):
         'Get Saved Password'
         try:
-            accountName = self._userPromptHandler.getWebSiteServiceName()
+            serviceName = self._userPromptHandler.getWebSiteServiceName()
+            dataFetchRequest = SavedPasswordData(
+                serviceName,
+                None,
+                self._authenticationService.userEmail,
+            )
 
-            savedPass = self._mainPasswordManager.getPassword(accountName)
-            print(f'Password of {accountName} = {savedPass}.')
+            savedData = self._mainPasswordManager.getPassword(dataFetchRequest)
+            print(f'Password of {savedData}.')
         except Exception as ex:
             handeled = self.__handleMainExcptions(ex, "while trying to get password.")
             if not handeled: raise

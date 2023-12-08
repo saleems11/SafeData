@@ -16,3 +16,10 @@ class SavedPasswordData(ISerilizable, IAmUnique):
 
     def getUniqueId(self):
         return self.email + self.serviceName
+
+    def __str__(self):
+        return f'Email = {self.email}\n' \
+               f'Service Name = {self.serviceName}\n' \
+               f'Password = {self.password}\n' \
+               f'websiteUrl = {self.website}\n' \
+               f'more Info = {self.metaData}.'

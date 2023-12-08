@@ -43,7 +43,7 @@ class MainPasswordManager:
         key = None
         collected = gc.collect()
 
-    def getPassword(self, dataToSave:SavedPasswordData):
+    def getPassword(self, dataToSave:SavedPasswordData) -> SavedPasswordData:
         'Throw exception'
         self.initSavedPasswordDir()
         # need to add the email to the path
@@ -51,13 +51,14 @@ class MainPasswordManager:
         if not FileManagement.DoesPathExist(fileFullPath):
             raise Exception(f'No matching passwrod for this service found :{dataToSave.serviceName}.')
 
-        decPassword = self._fileEncryptionManager.read_encrypted_file(fileFullPath)
+        defFile = self._fileEncryptionManager.read_encrypted_file(fileFullPath)
+        savedData = SavedPasswordData.deserilizeJson(defFile)
 
         # Clean-up
         key = None
         collected = gc.collect()
 
-        return decPassword
+        return savedData
 
     def initSavedPasswordDir(self):
         FileManagement.CreateDir(self._defaultDir)

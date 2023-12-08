@@ -41,7 +41,8 @@ encrypted value.
 
 
 ## To Do:
-1. Allow multi Users
+1. Allow multi Users - Done
 2. Save More Data
+3. Save metaData Per User
 
 Saleem Saiegh

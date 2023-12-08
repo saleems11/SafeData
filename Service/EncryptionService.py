@@ -23,6 +23,19 @@ class EncryptionService:
         return iv + cipher.encrypt(gibberishDataInBytes)
 
     @staticmethod
+    def encyptV2(message:str, key):
+        # encryption based on the Key size
+        # add Gibberish Part
+        # will not be used, but it is here in case needed
+        gibberishData = GibberishService.addGibberishToData(message)
+        gibberishDataInBytes = bytes(gibberishData, Consts.encoding)
+
+        # add IV
+        encobj = AES.new(key, AES.MODE_GCM)
+        ciphertext, authTag = encobj.encrypt_and_digest(gibberishDataInBytes)
+        return (ciphertext, authTag, encobj.nonce)
+
+    @staticmethod
     def decrypt(ciphertext, key):
         # Decryption Part
         iv = ciphertext[:AES.block_size]
@@ -31,6 +44,19 @@ class EncryptionService:
 
         # Clean up part
         textWithoutBytes = plaintext.rstrip(b"\0")
+        decodedTextStr = textWithoutBytes.decode(Consts.encoding)
+        cleanplaintextDec = GibberishService.removeGibberishFromData(decodedTextStr)
+
+        return cleanplaintextDec
+
+    @staticmethod
+    def decryptV2(ciphertext, key):
+        (ciphertext, authTag, nonce) = ciphertext
+        encobj = AES.new(key, AES.MODE_GCM, nonce)
+        decryptedData = (encobj.decrypt_and_verify(ciphertext, authTag))
+
+        # Clean up part
+        textWithoutBytes = decryptedData.rstrip(b"\0")
         decodedTextStr = textWithoutBytes.decode(Consts.encoding)
         cleanplaintextDec = GibberishService.removeGibberishFromData(decodedTextStr)
 
